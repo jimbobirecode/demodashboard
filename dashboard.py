@@ -18,6 +18,86 @@ def get_db_connection():
     """Get database connection"""
     return psycopg.connect(DATABASE_URL)
 
+def get_club_display_name(club_id: str) -> str:
+    """
+    Get the proper display name for a golf club based on its ID.
+    Maps internal club IDs to full display names.
+    """
+    club_mapping = {
+        'island': 'Island Golf Club',
+        'islandgolfclub': 'Island Golf Club',
+        'island-golf-club': 'Island Golf Club',
+        'island_golf_club': 'Island Golf Club',
+    }
+
+    # Try to find mapping (case insensitive)
+    club_id_lower = club_id.lower() if club_id else ''
+    if club_id_lower in club_mapping:
+        return club_mapping[club_id_lower]
+
+    # Default: capitalize each word
+    return club_id.replace('_', ' ').replace('-', ' ').title() if club_id else 'Unknown Club'
+
+def get_club_color(club_id: str) -> str:
+    """
+    Get the brand color for a specific golf club.
+    Returns hex color code for club branding.
+    """
+    club_colors = {
+        'island': '#2563eb',  # Island Golf Club blue
+        'islandgolfclub': '#2563eb',
+        'island-golf-club': '#2563eb',
+        'island_golf_club': '#2563eb',
+    }
+
+    club_id_lower = club_id.lower() if club_id else ''
+    return club_colors.get(club_id_lower, '#eab308')  # Default yellow
+
+def get_club_info(club_id: str) -> dict:
+    """
+    Get additional information for a specific golf club.
+    Returns dict with club details like contact info, location, etc.
+    """
+    club_info = {
+        'island': {
+            'phone': '(555) 123-4567',
+            'email': 'bookings@islandgolfclub.com',
+            'location': 'Island Golf Club, Paradise Bay',
+            'website': 'www.islandgolfclub.com',
+            'icon': '🏝️'
+        },
+        'islandgolfclub': {
+            'phone': '(555) 123-4567',
+            'email': 'bookings@islandgolfclub.com',
+            'location': 'Island Golf Club, Paradise Bay',
+            'website': 'www.islandgolfclub.com',
+            'icon': '🏝️'
+        },
+        'island-golf-club': {
+            'phone': '(555) 123-4567',
+            'email': 'bookings@islandgolfclub.com',
+            'location': 'Island Golf Club, Paradise Bay',
+            'website': 'www.islandgolfclub.com',
+            'icon': '🏝️'
+        },
+        'island_golf_club': {
+            'phone': '(555) 123-4567',
+            'email': 'bookings@islandgolfclub.com',
+            'location': 'Island Golf Club, Paradise Bay',
+            'website': 'www.islandgolfclub.com',
+            'icon': '🏝️'
+        },
+    }
+
+    club_id_lower = club_id.lower() if club_id else ''
+    return club_info.get(club_id_lower, {
+        'phone': 'N/A',
+        'email': 'N/A',
+        'location': 'N/A',
+        'website': 'N/A',
+        'icon': '🏌️'
+    })
+
 def extract_tee_time_from_note(note_content):
     """
     Extract tee time from email content.
@@ -983,9 +1063,51 @@ with st.sidebar:
     """, unsafe_allow_html=True)
     
     st.markdown(f"<div class='user-badge'>{st.session_state.full_name}</div>", unsafe_allow_html=True)
-    st.markdown(f"<div class='club-badge'>{st.session_state.customer_id.title()}</div>", unsafe_allow_html=True)
+
+    # Get club display name and color
+    club_display = get_club_display_name(st.session_state.customer_id)
+    club_color = get_club_color(st.session_state.customer_id)
+
+    st.markdown(f"""
+        <div style='
+            background: {club_color};
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 1rem;
+            letter-spacing: 0.3px;
+        '>{club_display}</div>
+    """, unsafe_allow_html=True)
 
     st.markdown("<div style='height: 1px; background: #1e293b; margin: 1.5rem 0;'></div>", unsafe_allow_html=True)
+
+    # Display club information
+    club_info = get_club_info(st.session_state.customer_id)
+    st.markdown(f"""
+        <div style='background: #0f1419; padding: 1rem; border-radius: 8px; border: 1px solid #1e293b; margin-bottom: 1rem;'>
+            <div style='display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;'>
+                <span style='font-size: 1.5rem;'>{club_info['icon']}</span>
+                <span style='color: #f9fafb; font-weight: 600; font-size: 0.875rem;'>Club Information</span>
+            </div>
+            <div style='color: #94a3b8; font-size: 0.75rem; line-height: 1.6;'>
+                <div style='margin-bottom: 0.5rem;'>
+                    <span style='color: #64748b;'>📍</span> {club_info['location']}
+                </div>
+                <div style='margin-bottom: 0.5rem;'>
+                    <span style='color: #64748b;'>📧</span> {club_info['email']}
+                </div>
+                <div style='margin-bottom: 0.5rem;'>
+                    <span style='color: #64748b;'>📞</span> {club_info['phone']}
+                </div>
+                <div>
+                    <span style='color: #64748b;'>🌐</span> {club_info['website']}
+                </div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
     if st.button("Logout", use_container_width=True):
         logout()
@@ -1049,9 +1171,12 @@ with st.sidebar:
         st.cache_data.clear()
         st.rerun()
 
-st.markdown("""
-    <h1 style='margin-bottom: 0.5rem;'>Booking Requests</h1>
-    <p style='color: #64748b; margin-bottom: 1rem; font-size: 0.9375rem;'>Manage and track all incoming tee time requests</p>
+# Get club display name for header
+club_display_header = get_club_display_name(st.session_state.customer_id)
+
+st.markdown(f"""
+    <h1 style='margin-bottom: 0.5rem;'>{club_display_header} - Booking Requests</h1>
+    <p style='color: #64748b; margin-bottom: 1rem; font-size: 0.9375rem;'>Manage and track all incoming tee time requests for {club_display_header}</p>
 """, unsafe_allow_html=True)
 
 # Show active filter indicator
