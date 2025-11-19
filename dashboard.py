@@ -756,12 +756,11 @@ if not st.session_state.authenticated:
     """, unsafe_allow_html=True)
 
     # Center the logo
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        st.markdown("<div class='login-logo-container'>", unsafe_allow_html=True)
-        st.image("https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/images.png",
-                 width=300)
-        st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("""
+        <div style='display: flex; justify-content: center; align-items: center;'>
+            <img src='https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/images.png' width='300' style='display: block; margin: 0 auto;'/>
+        </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("""
         <div class="login-subtitle">Booking Management System</div>
