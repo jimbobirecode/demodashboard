@@ -24,10 +24,10 @@ def get_club_display_name(club_id: str) -> str:
     Maps internal club IDs to full display names.
     """
     club_mapping = {
-        'island': 'Island Golf Club',
-        'islandgolfclub': 'Island Golf Club',
-        'island-golf-club': 'Island Golf Club',
-        'island_golf_club': 'Island Golf Club',
+        'island': 'Streamsong Resort',
+        'islandgolfclub': 'Streamsong Resort',
+        'island-golf-club': 'Streamsong Resort',
+        'island_golf_club': 'Streamsong Resort',
     }
 
     # Try to find mapping (case insensitive)
@@ -44,14 +44,14 @@ def get_club_color(club_id: str) -> str:
     Returns hex color code for club branding.
     """
     club_colors = {
-        'island': '#2563eb',  # Island Golf Club blue
-        'islandgolfclub': '#2563eb',
-        'island-golf-club': '#2563eb',
-        'island_golf_club': '#2563eb',
+        'island': '#6b7c3f',  # Streamsong green
+        'islandgolfclub': '#6b7c3f',
+        'island-golf-club': '#6b7c3f',
+        'island_golf_club': '#6b7c3f',
     }
 
     club_id_lower = club_id.lower() if club_id else ''
-    return club_colors.get(club_id_lower, '#eab308')  # Default yellow
+    return club_colors.get(club_id_lower, '#6b7c3f')  # Default Streamsong green
 
 def get_club_info(club_id: str) -> dict:
     """
@@ -60,32 +60,32 @@ def get_club_info(club_id: str) -> dict:
     """
     club_info = {
         'island': {
-            'phone': '(555) 123-4567',
-            'email': 'bookings@islandgolfclub.com',
-            'location': 'Island Golf Club, Paradise Bay',
-            'website': 'www.islandgolfclub.com',
-            'icon': '🏝️'
+            'phone': '(863) 428-1000',
+            'email': 'reservations@streamsongresort.com',
+            'location': 'Streamsong Resort, Florida',
+            'website': 'www.streamsongresort.com',
+            'icon': '⛳'
         },
         'islandgolfclub': {
-            'phone': '(555) 123-4567',
-            'email': 'bookings@islandgolfclub.com',
-            'location': 'Island Golf Club, Paradise Bay',
-            'website': 'www.islandgolfclub.com',
-            'icon': '🏝️'
+            'phone': '(863) 428-1000',
+            'email': 'reservations@streamsongresort.com',
+            'location': 'Streamsong Resort, Florida',
+            'website': 'www.streamsongresort.com',
+            'icon': '⛳'
         },
         'island-golf-club': {
-            'phone': '(555) 123-4567',
-            'email': 'bookings@islandgolfclub.com',
-            'location': 'Island Golf Club, Paradise Bay',
-            'website': 'www.islandgolfclub.com',
-            'icon': '🏝️'
+            'phone': '(863) 428-1000',
+            'email': 'reservations@streamsongresort.com',
+            'location': 'Streamsong Resort, Florida',
+            'website': 'www.streamsongresort.com',
+            'icon': '⛳'
         },
         'island_golf_club': {
-            'phone': '(555) 123-4567',
-            'email': 'bookings@islandgolfclub.com',
-            'location': 'Island Golf Club, Paradise Bay',
-            'website': 'www.islandgolfclub.com',
-            'icon': '🏝️'
+            'phone': '(863) 428-1000',
+            'email': 'reservations@streamsongresort.com',
+            'location': 'Streamsong Resort, Florida',
+            'website': 'www.streamsongresort.com',
+            'icon': '⛳'
         },
     }
 
@@ -255,12 +255,12 @@ def get_status_color(status: str) -> str:
 def generate_status_progress_bar(current_status: str) -> str:
     """Generate a linear status progress bar showing booking workflow"""
 
-    # Define the workflow stages
+    # Define the workflow stages - Streamsong colors
     stages = [
-        {'name': 'Inquiry', 'color': '#60a5fa'},
-        {'name': 'Requested', 'color': '#eab308'},
-        {'name': 'Confirmed', 'color': '#f97316'},
-        {'name': 'Booked', 'color': '#10b981'}
+        {'name': 'Inquiry', 'color': '#87a7b3'},
+        {'name': 'Requested', 'color': '#cc8855'},
+        {'name': 'Confirmed', 'color': '#8b9456'},
+        {'name': 'Booked', 'color': '#6b7c3f'}
     ]
 
     # Handle special cases
@@ -272,9 +272,9 @@ def generate_status_progress_bar(current_status: str) -> str:
     is_cancelled = current_status == 'Cancelled'
 
     if is_rejected or is_cancelled:
-        status_color = '#ef4444' if is_rejected else '#64748b'
+        status_color = '#a0653f' if is_rejected else '#666666'
         return f"""
-        <div style='background: #0a0f1e; padding: 1rem; border-radius: 8px; border: 1px solid #1e293b;'>
+        <div style='background: #3d5266; padding: 1rem; border-radius: 8px; border: 2px solid #6b7c3f;'>
             <div style='display: flex; align-items: center; justify-content: center; gap: 0.75rem;'>
                 <div style='width: 12px; height: 12px; border-radius: 50%; background: {status_color};'></div>
                 <span style='color: {status_color}; font-weight: 700; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.5px;'>{current_status}</span>
@@ -287,19 +287,19 @@ def generate_status_progress_bar(current_status: str) -> str:
 
     # Generate HTML
     html = """
-    <div style='background: #0a0f1e; padding: 1.25rem; border-radius: 8px; border: 1px solid #1e293b;'>
+    <div style='background: #3d5266; padding: 1.25rem; border-radius: 8px; border: 2px solid #6b7c3f;'>
         <div style='display: flex; align-items: center; justify-content: space-between; position: relative;'>
     """
 
     # Add connecting line
     html += """
-        <div style='position: absolute; top: 1rem; left: 2rem; right: 2rem; height: 3px; background: #1e293b; z-index: 1;'></div>
+        <div style='position: absolute; top: 0.75rem; left: 2rem; right: 2rem; height: 3px; background: #4a6278; z-index: 1;'></div>
     """
 
     # Add progress line (only up to current stage)
     progress_width = (current_index / (len(stages) - 1)) * 100 if len(stages) > 1 else 0
     html += f"""
-        <div style='position: absolute; top: 1rem; left: 2rem; width: calc({progress_width}% - 2rem); height: 3px; background: linear-gradient(90deg, #60a5fa, #10b981); z-index: 2;'></div>
+        <div style='position: absolute; top: 0.75rem; left: 2rem; width: calc({progress_width}% - 2rem); height: 3px; background: linear-gradient(90deg, #87a7b3, #6b7c3f); z-index: 2;'></div>
     """
 
     # Add stage nodes
@@ -307,9 +307,10 @@ def generate_status_progress_bar(current_status: str) -> str:
         is_active = i <= current_index
         is_current = i == current_index
 
-        bg_color = stage['color'] if is_active else '#1e293b'
-        text_color = '#f9fafb' if is_active else '#64748b'
-        border_color = stage['color'] if is_current else ('#2d3748' if is_active else '#1e293b')
+        bg_color = stage['color'] if is_active else '#4a6278'
+        text_color = '#f7f5f2' if is_active else '#999999'
+        border_color = stage['color'] if is_current else ('#6b7c3f' if is_active else '#4a6278')
+        box_shadow = '0 0 0 4px rgba(107, 124, 63, 0.4)' if is_current else 'none'
 
         html += f"""
         <div style='display: flex; flex-direction: column; align-items: center; z-index: 3; position: relative;'>
@@ -319,7 +320,7 @@ def generate_status_progress_bar(current_status: str) -> str:
                 border-radius: 50%;
                 background: {bg_color};
                 border: 3px solid {border_color};
-                box-shadow: {('0 0 0 4px rgba(16, 185, 129, 0.2)' if is_current else 'none')};
+                box-shadow: {box_shadow};
                 transition: all 0.3s ease;
             '>
             </div>
@@ -379,32 +380,32 @@ def logout():
 # STREAMLIT PAGE CONFIG
 # ========================================
 st.set_page_config(
-    page_title="TeeMail Dashboard",
-    page_icon="🏌️",
+    page_title="Streamsong Booking Dashboard",
+    page_icon="⛳",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ========================================
-# STYLING - ENTERPRISE GRADE
+# STYLING - STREAMSONG BRAND
 # ========================================
 st.markdown("""
     <style>
     .main {
-        background: #0a0f1e;
+        background: #2b3d4f;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     }
-    
+
     [data-testid="stSidebar"] {
-        background: #0f1419;
-        border-right: 1px solid #1e293b;
+        background: #1f2d3d;
+        border-right: 1px solid #6b7c3f;
     }
     
     .metric-card {
-        background: linear-gradient(135deg, #141b2b 0%, #1a2332 100%);
+        background: linear-gradient(135deg, #3d5266 0%, #4a6278 100%);
         padding: 1.75rem;
         border-radius: 12px;
-        border: 1px solid #1e293b;
+        border: 2px solid #6b7c3f;
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
@@ -417,14 +418,14 @@ st.markdown("""
         left: 0;
         right: 0;
         height: 3px;
-        background: linear-gradient(90deg, #60a5fa, #10b981);
+        background: linear-gradient(90deg, #6b7c3f, #d4b896);
         opacity: 0;
         transition: opacity 0.3s ease;
     }
 
     .metric-card:hover {
-        border-color: #2d3748;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        border-color: #8b9456;
+        box-shadow: 0 8px 24px rgba(107, 124, 63, 0.4);
         transform: translateY(-2px);
     }
 
@@ -435,66 +436,66 @@ st.markdown("""
     .booking-id {
         font-size: 1rem;
         font-weight: 600;
-        color: #f9fafb;
+        color: #f7f5f2;
         margin: 0;
         font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
         letter-spacing: 0.5px;
     }
-    
+
     .booking-email {
-        color: #64748b;
+        color: #d4b896;
         font-size: 0.875rem;
         margin: 0.375rem 0 0 0;
     }
-    
+
     .timestamp {
-        color: #64748b;
+        color: #d4b896;
         font-size: 0.8125rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         font-weight: 500;
     }
-    
+
     .timestamp-value {
-        color: #94a3b8;
+        color: #e8e3d9;
         font-size: 0.875rem;
         font-weight: 600;
         margin-top: 0.25rem;
     }
     
     .stTextArea textarea {
-        background: #0a0f1e !important;
-        border: 1px solid #1e293b !important;
+        background: #2b3d4f !important;
+        border: 2px solid #6b7c3f !important;
         border-radius: 0 0 8px 8px !important;
-        color: #cbd5e1 !important;
+        color: #e8e3d9 !important;
         font-family: 'SF Mono', 'Monaco', 'Consolas', monospace !important;
         font-size: 0.8125rem !important;
         line-height: 1.7 !important;
         padding: 1rem !important;
     }
-    
+
     .stTextArea textarea:disabled {
-        background: #0a0f1e !important;
-        color: #cbd5e1 !important;
+        background: #2b3d4f !important;
+        color: #e8e3d9 !important;
         opacity: 1 !important;
-        -webkit-text-fill-color: #cbd5e1 !important;
+        -webkit-text-fill-color: #e8e3d9 !important;
     }
     
     .status-timeline {
         display: inline-flex;
         align-items: center;
         gap: 0.625rem;
-        background: #0a0f1e;
+        background: #3d5266;
         padding: 0.5rem 1rem;
         border-radius: 8px;
-        border: 1px solid #1e293b;
+        border: 2px solid #6b7c3f;
     }
-    
+
     .status-icon {
         font-size: 1.125rem;
         line-height: 1;
     }
-    
+
     .status-badge {
         padding: 0.375rem 0.875rem;
         border-radius: 6px;
@@ -507,43 +508,43 @@ st.markdown("""
     }
 
     .status-inquiry {
-        background: rgba(59, 130, 246, 0.1);
-        color: #60a5fa;
-        border: 1px solid rgba(59, 130, 246, 0.2);
+        background: rgba(135, 167, 179, 0.2);
+        color: #87a7b3;
+        border: 2px solid rgba(135, 167, 179, 0.3);
     }
 
     .status-requested {
-        background: rgba(234, 179, 8, 0.1);
-        color: #eab308;
-        border: 1px solid rgba(234, 179, 8, 0.2);
+        background: rgba(204, 136, 85, 0.2);
+        color: #cc8855;
+        border: 2px solid rgba(204, 136, 85, 0.3);
     }
 
     .status-confirmed {
-        background: rgba(249, 115, 22, 0.1);
-        color: #f97316;
-        border: 1px solid rgba(249, 115, 22, 0.2);
+        background: rgba(139, 148, 86, 0.2);
+        color: #8b9456;
+        border: 2px solid rgba(139, 148, 86, 0.3);
     }
 
     .status-booked {
-        background: rgba(16, 185, 129, 0.1);
-        color: #10b981;
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        background: rgba(107, 124, 63, 0.2);
+        color: #6b7c3f;
+        border: 2px solid rgba(107, 124, 63, 0.3);
     }
 
     .status-rejected {
-        background: rgba(239, 68, 68, 0.1);
-        color: #ef4444;
-        border: 1px solid rgba(239, 68, 68, 0.2);
+        background: rgba(160, 101, 63, 0.2);
+        color: #a0653f;
+        border: 2px solid rgba(160, 101, 63, 0.3);
     }
 
     .status-cancelled {
-        background: rgba(100, 116, 139, 0.1);
-        color: #64748b;
-        border: 1px solid rgba(100, 116, 139, 0.2);
+        background: rgba(102, 102, 102, 0.2);
+        color: #666666;
+        border: 2px solid rgba(102, 102, 102, 0.3);
     }
     
     .stButton > button {
-        background: #10b981;
+        background: #6b7c3f;
         color: white;
         border: none;
         padding: 0.625rem 1.25rem;
@@ -557,8 +558,8 @@ st.markdown("""
     }
 
     .stButton > button:hover {
-        background: #059669;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        background: #8b9456;
+        box-shadow: 0 4px 12px rgba(107, 124, 63, 0.4);
         transform: translateY(-1px);
     }
 
@@ -566,24 +567,24 @@ st.markdown("""
         transform: translateY(0px);
     }
     
-    h1 { 
-        color: #f9fafb !important; 
+    h1 {
+        color: #f7f5f2 !important;
         font-weight: 700 !important;
         font-size: 1.875rem !important;
         letter-spacing: -0.5px !important;
     }
-    
-    h2, h3, h4, h5, h6 { 
-        color: #f9fafb !important; 
-        font-weight: 600 !important; 
+
+    h2, h3, h4, h5, h6 {
+        color: #f7f5f2 !important;
+        font-weight: 600 !important;
     }
-    
-    p, span, div, label { 
-        color: #cbd5e1 !important; 
+
+    p, span, div, label {
+        color: #e8e3d9 !important;
     }
-    
+
     .user-badge {
-        background: #10b981;
+        background: #6b7c3f;
         color: white;
         padding: 0.5rem 1rem;
         border-radius: 6px;
@@ -593,10 +594,10 @@ st.markdown("""
         margin-bottom: 0.5rem;
         letter-spacing: 0.3px;
     }
-    
+
     .club-badge {
-        background: #eab308;
-        color: #0f1419;
+        background: #d4b896;
+        color: #2b3d4f;
         padding: 0.5rem 1rem;
         border-radius: 6px;
         font-size: 0.8125rem;
@@ -605,9 +606,9 @@ st.markdown("""
         margin-bottom: 1rem;
         letter-spacing: 0.3px;
     }
-    
+
     .data-label {
-        color: #64748b;
+        color: #d4b896;
         font-size: 0.75rem;
         font-weight: 600;
         text-transform: uppercase;
@@ -616,23 +617,23 @@ st.markdown("""
     }
     
     .streamlit-expanderHeader {
-        background: #0f1419 !important;
+        background: #3d5266 !important;
         border-radius: 8px !important;
-        border: 1px solid #1e293b !important;
+        border: 2px solid #6b7c3f !important;
         font-weight: 600 !important;
         font-size: 0.875rem !important;
-        color: #cbd5e1 !important;
+        color: #e8e3d9 !important;
         transition: all 0.2s ease !important;
     }
 
     .streamlit-expanderHeader:hover {
-        border-color: #2d3748 !important;
-        background: #141b2b !important;
+        border-color: #8b9456 !important;
+        background: #4a6278 !important;
     }
 
     .streamlit-expanderContent {
-        background: #0a0f1e !important;
-        border: 1px solid #1e293b !important;
+        background: #2b3d4f !important;
+        border: 2px solid #6b7c3f !important;
         border-top: none !important;
         border-radius: 0 0 8px 8px !important;
     }
@@ -654,14 +655,14 @@ st.markdown("""
     }
     
     .stMultiSelect > div > div {
-        background: #141b2b !important;
-        border: 1px solid #1e293b !important;
+        background: #3d5266 !important;
+        border: 2px solid #6b7c3f !important;
         border-radius: 6px !important;
     }
-    
+
     .stDateInput > div > div {
-        background: #141b2b !important;
-        border: 1px solid #1e293b !important;
+        background: #3d5266 !important;
+        border: 2px solid #6b7c3f !important;
         border-radius: 6px !important;
     }
     
@@ -682,30 +683,30 @@ if st.session_state.show_password_change:
             max-width: 500px;
             margin: 100px auto;
             padding: 2.5rem;
-            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            background: linear-gradient(135deg, #3d5266 0%, #5a6f85 100%);
             border-radius: 16px;
-            border: 1px solid rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(107, 124, 63, 0.3);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
         .password-title {
-            color: #f9fafb;
+            color: #f7f5f2;
             font-size: 1.8rem;
             font-weight: 700;
             text-align: center;
             margin-bottom: 0.5rem;
         }
         .password-subtitle {
-            color: #94a3b8;
+            color: #e8e3d9;
             text-align: center;
             margin-bottom: 2rem;
             font-size: 0.95rem;
         }
         </style>
     """, unsafe_allow_html=True)
-    
+
     st.markdown("""
         <div class="password-container">
-            <div class="password-title">🔐 Set Your Password</div>
+            <div class="password-title">Set Your Password</div>
             <div class="password-subtitle">First-time setup - create your secure password</div>
         </div>
     """, unsafe_allow_html=True)
@@ -752,35 +753,30 @@ if st.session_state.show_password_change:
 if not st.session_state.authenticated:
     st.markdown("""
         <style>
-        .login-container {
-            max-width: 450px;
-            margin: 100px auto;
-            padding: 2.5rem;
-            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-            border-radius: 16px;
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-        }
-        .login-title {
-            color: #f9fafb;
-            font-size: 2rem;
-            font-weight: 700;
+        .login-logo-container {
             text-align: center;
-            margin-bottom: 0.5rem;
+            margin-top: 80px;
+            margin-bottom: 2rem;
         }
         .login-subtitle {
-            color: #94a3b8;
+            color: #d4b896;
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+            font-weight: 500;
         }
         </style>
     """, unsafe_allow_html=True)
-    
+
+    # Center the logo placeholder (you would use an actual logo image here)
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        st.markdown("<div class='login-logo-container'>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align: center; color: #f7f5f2;'>⛳ Streamsong</h1>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
     st.markdown("""
-        <div class="login-container">
-            <div class="login-title">🏌️ TeeMail Dashboard</div>
-            <div class="login-subtitle">Booking Management System</div>
-        </div>
+        <div class="login-subtitle">Booking Management System</div>
     """, unsafe_allow_html=True)
     
     with st.form("login_form"):
@@ -836,7 +832,9 @@ def load_bookings_from_db(club_filter):
             SELECT
                 id, booking_id, guest_email, date, tee_time, players, total,
                 status, note, club, timestamp, customer_confirmed_at,
-                updated_at, updated_by, created_at
+                updated_at, updated_by, created_at,
+                hotel_required, hotel_checkin, hotel_checkout,
+                golf_courses, selected_tee_times
             FROM bookings
             WHERE club = %s
             ORDER BY timestamp DESC
@@ -852,7 +850,7 @@ def load_bookings_from_db(club_filter):
         df = pd.DataFrame(bookings)
 
         # Ensure all datetime columns are properly converted
-        for col in ['timestamp', 'customer_confirmed_at', 'updated_at', 'created_at']:
+        for col in ['timestamp', 'customer_confirmed_at', 'updated_at', 'created_at', 'hotel_checkin', 'hotel_checkout']:
             if col in df.columns:
                 df[col] = pd.to_datetime(df[col], errors='coerce')
 
@@ -901,6 +899,23 @@ def load_bookings_from_db(club_filter):
 
         if 'booking_id' not in df.columns:
             df['booking_id'] = df.index.map(lambda x: f'BOOK-{x:04d}')
+
+        # Ensure hotel_required column exists with default False
+        if 'hotel_required' not in df.columns:
+            df['hotel_required'] = False
+        else:
+            df['hotel_required'] = df['hotel_required'].fillna(False)
+
+        # Ensure golf_courses and selected_tee_times columns exist
+        if 'golf_courses' not in df.columns:
+            df['golf_courses'] = ''
+        else:
+            df['golf_courses'] = df['golf_courses'].fillna('')
+
+        if 'selected_tee_times' not in df.columns:
+            df['selected_tee_times'] = ''
+        else:
+            df['selected_tee_times'] = df['selected_tee_times'].fillna('')
 
         return df, 'postgresql'
     except Exception as e:
@@ -1055,59 +1070,27 @@ def update_booking_note(booking_id: str, note: str):
 # ========================================
 
 with st.sidebar:
-    st.markdown(f"""
-        <div style='text-align: center; padding: 1.5rem 1rem; border-bottom: 1px solid #1e293b; margin-bottom: 1.5rem;'>
-            <h2 style='color: #10b981; margin: 0; font-size: 1.5rem; font-weight: 700; letter-spacing: -0.5px;'>TeeMail</h2>
-            <p style='color: #64748b; font-size: 0.8125rem; margin-top: 0.375rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;'>Booking Dashboard</p>
+    # Streamsong logo placeholder (you would use an actual image here)
+    st.markdown("""
+        <div style='text-align: center; padding: 1rem; margin-bottom: 1rem;'>
+            <h2 style='color: #d4b896; margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px;'>⛳ STREAMSONG</h2>
         </div>
     """, unsafe_allow_html=True)
-    
+    st.markdown("""
+        <div style='text-align: center; margin-top: 0.5rem;'>
+            <p style='color: #e8e3d9; font-size: 0.9rem; margin: 0; font-weight: 600; letter-spacing: 0.5px;'>Booking Dashboard</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<div style='height: 1px; background: #6b7c3f; margin: 1rem 0 1.5rem 0;'></div>", unsafe_allow_html=True)
+
     st.markdown(f"<div class='user-badge'>{st.session_state.full_name}</div>", unsafe_allow_html=True)
 
-    # Get club display name and color
+    # Get club display name
     club_display = get_club_display_name(st.session_state.customer_id)
-    club_color = get_club_color(st.session_state.customer_id)
+    st.markdown(f"<div class='club-badge'>{club_display}</div>", unsafe_allow_html=True)
 
-    st.markdown(f"""
-        <div style='
-            background: {club_color};
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-size: 0.8125rem;
-            font-weight: 600;
-            display: inline-block;
-            margin-bottom: 1rem;
-            letter-spacing: 0.3px;
-        '>{club_display}</div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("<div style='height: 1px; background: #1e293b; margin: 1.5rem 0;'></div>", unsafe_allow_html=True)
-
-    # Display club information
-    club_info = get_club_info(st.session_state.customer_id)
-    st.markdown(f"""
-        <div style='background: #0f1419; padding: 1rem; border-radius: 8px; border: 1px solid #1e293b; margin-bottom: 1rem;'>
-            <div style='display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;'>
-                <span style='font-size: 1.5rem;'>{club_info['icon']}</span>
-                <span style='color: #f9fafb; font-weight: 600; font-size: 0.875rem;'>Club Information</span>
-            </div>
-            <div style='color: #94a3b8; font-size: 0.75rem; line-height: 1.6;'>
-                <div style='margin-bottom: 0.5rem;'>
-                    <span style='color: #64748b;'>📍</span> {club_info['location']}
-                </div>
-                <div style='margin-bottom: 0.5rem;'>
-                    <span style='color: #64748b;'>📧</span> {club_info['email']}
-                </div>
-                <div style='margin-bottom: 0.5rem;'>
-                    <span style='color: #64748b;'>📞</span> {club_info['phone']}
-                </div>
-                <div>
-                    <span style='color: #64748b;'>🌐</span> {club_info['website']}
-                </div>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+    st.markdown("<div style='height: 1px; background: #6b7c3f; margin: 1.5rem 0;'></div>", unsafe_allow_html=True)
 
     if st.button("Logout", use_container_width=True):
         logout()
@@ -1171,21 +1154,28 @@ with st.sidebar:
         st.cache_data.clear()
         st.rerun()
 
-# Get club display name for header
-club_display_header = get_club_display_name(st.session_state.customer_id)
-
-st.markdown(f"""
-    <h1 style='margin-bottom: 0.5rem;'>{club_display_header} - Booking Requests</h1>
-    <p style='color: #64748b; margin-bottom: 1rem; font-size: 0.9375rem;'>Manage and track all incoming tee time requests for {club_display_header}</p>
+st.markdown("""
+    <h1 style='margin-bottom: 1rem;'>Streamsong Dashboard</h1>
 """, unsafe_allow_html=True)
+
+# Header with refresh button
+header_col1, header_col2 = st.columns([4, 1])
+with header_col1:
+    st.markdown("""
+        <h2 style='margin-bottom: 0.5rem;'>Booking Requests</h2>
+        <p style='color: #d4b896; margin-bottom: 1rem; font-size: 0.9375rem;'>Manage and track all incoming tee time requests</p>
+    """, unsafe_allow_html=True)
+with header_col2:
+    if st.button("🔄 Refresh", key="refresh_bookings", use_container_width=True, help="Refresh booking data"):
+        st.cache_data.clear()
+        st.rerun()
 
 # Show active filter indicator
 if st.session_state.clicked_status_filter:
     st.markdown(f"""
-        <div style='background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;'>
+        <div style='background: #3d5266; border: 2px solid #6b7c3f; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;'>
             <div style='display: flex; align-items: center; gap: 0.5rem;'>
-                <span style='font-size: 1.25rem;'>🎯</span>
-                <span style='color: #10b981; font-weight: 600;'>Filtering by: {st.session_state.clicked_status_filter}</span>
+                <span style='color: #6b7c3f; font-weight: 600; font-size: 1rem;'>Filtering by: {st.session_state.clicked_status_filter}</span>
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -1227,37 +1217,37 @@ all_booked_count = len(df[df['status'] == 'Booked'])
 
 with col1:
     inquiry_count = len(filtered_df[filtered_df['status'].isin(['Inquiry', 'Pending'])])
-    if st.button(f"🔵 Inquiry\n{all_inquiry_count}", key="filter_inquiry", use_container_width=True, help="Click to filter Inquiry status"):
+    if st.button(f"Inquiry\n{all_inquiry_count}", key="filter_inquiry", use_container_width=True, help="Click to filter Inquiry status"):
         st.session_state.clicked_status_filter = "Inquiry"
         st.cache_data.clear()
         st.rerun()
-    st.markdown(f"<div style='text-align: center; color: #64748b; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {inquiry_count}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align: center; color: #d4b896; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {inquiry_count}</div>", unsafe_allow_html=True)
 
 with col2:
     requested_count = len(filtered_df[filtered_df['status'] == 'Requested'])
-    if st.button(f"🟡 Requested\n{all_requested_count}", key="filter_requested", use_container_width=True, help="Click to filter Requested status"):
+    if st.button(f"Requested\n{all_requested_count}", key="filter_requested", use_container_width=True, help="Click to filter Requested status"):
         st.session_state.clicked_status_filter = "Requested"
         st.cache_data.clear()
         st.rerun()
-    st.markdown(f"<div style='text-align: center; color: #64748b; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {requested_count}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align: center; color: #d4b896; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {requested_count}</div>", unsafe_allow_html=True)
 
 with col3:
     confirmed_count = len(filtered_df[filtered_df['status'] == 'Confirmed'])
-    if st.button(f"🟠 Confirmed\n{all_confirmed_count}", key="filter_confirmed", use_container_width=True, help="Click to filter Confirmed status"):
+    if st.button(f"Confirmed\n{all_confirmed_count}", key="filter_confirmed", use_container_width=True, help="Click to filter Confirmed status"):
         st.session_state.clicked_status_filter = "Confirmed"
         st.cache_data.clear()
         st.rerun()
-    st.markdown(f"<div style='text-align: center; color: #64748b; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {confirmed_count}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align: center; color: #d4b896; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {confirmed_count}</div>", unsafe_allow_html=True)
 
 with col4:
     booked_count = len(filtered_df[filtered_df['status'] == 'Booked'])
-    if st.button(f"✅ Booked\n{all_booked_count}", key="filter_booked", use_container_width=True, help="Click to filter Booked status"):
+    if st.button(f"Booked\n{all_booked_count}", key="filter_booked", use_container_width=True, help="Click to filter Booked status"):
         st.session_state.clicked_status_filter = "Booked"
         st.cache_data.clear()
         st.rerun()
-    st.markdown(f"<div style='text-align: center; color: #64748b; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {booked_count}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align: center; color: #d4b896; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {booked_count}</div>", unsafe_allow_html=True)
 
-st.markdown("<div style='height: 1px; background: #1e293b; margin: 2rem 0;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height: 2px; background: #6b7c3f; margin: 2rem 0;'></div>", unsafe_allow_html=True)
 
 # Format date range string
 if date_range:
@@ -1276,6 +1266,9 @@ st.markdown(f"""
         <p style='color: #64748b; font-size: 0.875rem; margin-top: 0.25rem;'>Showing bookings from {date_str}</p>
     </div>
 """, unsafe_allow_html=True)
+
+# Add visual separator
+st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
 
 # ========================================
 # BOOKING CARDS - ENHANCED VERSION
@@ -1298,10 +1291,10 @@ for idx, booking in filtered_df.iterrows():
         current_status = 'Inquiry'
 
     stages = [
-        {'name': 'Inquiry', 'color': '#60a5fa'},
-        {'name': 'Requested', 'color': '#eab308'},
-        {'name': 'Confirmed', 'color': '#f97316'},
-        {'name': 'Booked', 'color': '#10b981'}
+        {'name': 'Inquiry', 'color': '#87a7b3'},
+        {'name': 'Requested', 'color': '#cc8855'},
+        {'name': 'Confirmed', 'color': '#8b9456'},
+        {'name': 'Booked', 'color': '#6b7c3f'}
     ]
 
     is_rejected = current_status == 'Rejected'
@@ -1315,26 +1308,61 @@ for idx, booking in filtered_df.iterrows():
     with st.container():
         # Build progress bar HTML inline
         if is_rejected or is_cancelled:
-            status_color = '#ef4444' if is_rejected else '#64748b'
-            progress_html = f"<div style='background: #0a0f1e; padding: 1rem; border-radius: 8px; border: 1px solid #1e293b;'><div style='display: flex; align-items: center; justify-content: center; gap: 0.75rem;'><div style='width: 12px; height: 12px; border-radius: 50%; background: {status_color};'></div><span style='color: {status_color}; font-weight: 700; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.5px;'>{current_status}</span></div></div>"
+            status_color = '#a0653f' if is_rejected else '#666666'
+            progress_html = f"<div style='background: #3d5266; padding: 1rem; border-radius: 8px; border: 2px solid #6b7c3f;'><div style='display: flex; align-items: center; justify-content: center; gap: 0.75rem;'><div style='width: 12px; height: 12px; border-radius: 50%; background: {status_color};'></div><span style='color: {status_color}; font-weight: 700; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.5px;'>{current_status}</span></div></div>"
         else:
             # Build stage nodes HTML
             stages_html = ""
             for i, stage in enumerate(stages):
                 is_active = i <= current_index
                 is_current = i == current_index
-                bg_color = stage['color'] if is_active else '#1e293b'
-                text_color = '#f9fafb' if is_active else '#64748b'
-                border_color = stage['color'] if is_current else ('#2d3748' if is_active else '#1e293b')
-                box_shadow = '0 0 0 4px rgba(16, 185, 129, 0.2)' if is_current else 'none'
+                bg_color = stage['color'] if is_active else '#4a6278'
+                text_color = '#f7f5f2' if is_active else '#999999'
+                border_color = stage['color'] if is_current else ('#6b7c3f' if is_active else '#4a6278')
+                box_shadow = '0 0 0 4px rgba(107, 124, 63, 0.4)' if is_current else 'none'
                 font_weight = '700' if is_current else '600'
 
                 stages_html += f"<div style='display: flex; flex-direction: column; align-items: center; z-index: 3; position: relative;'><div style='width: 1.5rem; height: 1.5rem; border-radius: 50%; background: {bg_color}; border: 3px solid {border_color}; box-shadow: {box_shadow}; transition: all 0.3s ease;'></div><div style='margin-top: 0.5rem; font-size: 0.7rem; font-weight: {font_weight}; color: {text_color}; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;'>{stage['name']}</div></div>"
 
-            progress_html = f"<div style='background: #0a0f1e; padding: 1.25rem; border-radius: 8px; border: 1px solid #1e293b;'><div style='display: flex; align-items: center; justify-content: space-between; position: relative;'><div style='position: absolute; top: 0.75rem; left: 2rem; right: 2rem; height: 3px; background: #1e293b; z-index: 1;'></div><div style='position: absolute; top: 0.75rem; left: 2rem; width: calc({progress_width}% - 2rem); height: 3px; background: linear-gradient(90deg, #60a5fa, #10b981); z-index: 2;'></div>{stages_html}</div></div>"
+            progress_html = f"<div style='background: #3d5266; padding: 1.25rem; border-radius: 8px; border: 2px solid #6b7c3f;'><div style='display: flex; align-items: center; justify-content: space-between; position: relative;'><div style='position: absolute; top: 0.75rem; left: 2rem; right: 2rem; height: 3px; background: #4a6278; z-index: 1;'></div><div style='position: absolute; top: 0.75rem; left: 2rem; width: calc({progress_width}% - 2rem); height: 3px; background: linear-gradient(90deg, #87a7b3, #6b7c3f); z-index: 2;'></div>{stages_html}</div></div>"
+
+        # Hotel requirement badge and dates
+        hotel_required = booking.get('hotel_required', False)
+        hotel_badge = ""
+        hotel_dates_html = ""
+
+        if hotel_required:
+            hotel_badge = "<div style='display: inline-block; background: #cc8855; color: #ffffff; padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 0.5rem;'>Hotel Required</div>"
+
+            # Format hotel dates if available
+            hotel_checkin = booking.get('hotel_checkin')
+            hotel_checkout = booking.get('hotel_checkout')
+
+            if hotel_checkin and not pd.isna(hotel_checkin):
+                checkin_str = hotel_checkin.strftime('%b %d, %Y')
+            else:
+                checkin_str = "Not Set"
+
+            if hotel_checkout and not pd.isna(hotel_checkout):
+                checkout_str = hotel_checkout.strftime('%b %d, %Y')
+            else:
+                checkout_str = "Not Set"
+
+            hotel_dates_html = f"<div style='background: #cc8855; padding: 1rem; border-radius: 8px; margin-top: 1rem;'><div style='color: #ffffff; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;'>Hotel Accommodation</div><div style='display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;'><div><div style='color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Check-In</div><div style='color: #ffffff; font-size: 0.95rem; font-weight: 700;'>{checkin_str}</div></div><div><div style='color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Check-Out</div><div style='color: #ffffff; font-size: 0.95rem; font-weight: 700;'>{checkout_str}</div></div></div></div>"
+
+        # Golf courses and tee times section
+        golf_courses = booking.get('golf_courses', '')
+        selected_tee_times = booking.get('selected_tee_times', '')
+        golf_info_html = ""
+
+        if golf_courses and not pd.isna(golf_courses) and str(golf_courses).strip():
+            courses_list = str(golf_courses).strip()
+            times_list = str(selected_tee_times).strip() if selected_tee_times and not pd.isna(selected_tee_times) else "Times not specified"
+
+            golf_info_html = f"<div style='background: #6b7c3f; padding: 1rem; border-radius: 8px; margin-top: 1rem;'><div style='color: #ffffff; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;'>Golf Courses & Tee Times</div><div style='display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;'><div><div style='color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Courses</div><div style='color: #ffffff; font-size: 0.875rem; font-weight: 600; line-height: 1.5;'>{html.escape(courses_list)}</div></div><div><div style='color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Tee Times</div><div style='color: #ffffff; font-size: 0.875rem; font-weight: 600; line-height: 1.5;'>{html.escape(times_list)}</div></div></div></div>"
 
         # Build complete card HTML including progress bar and details
-        card_html = f"""<div class='booking-card' style='background: linear-gradient(135deg, #141b2b 0%, #1a2332 100%); border: 1px solid #1e293b; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); transition: all 0.3s ease;'><div style='display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;'><div style='flex: 1;'><div class='booking-id' style='margin-bottom: 0.5rem;'>{html.escape(str(booking['booking_id']))}</div><div class='booking-email'>{html.escape(str(booking['guest_email']))}</div></div><div style='text-align: right;'><div class='timestamp'>REQUESTED</div><div class='timestamp-value'>{requested_time}</div></div></div><div style='margin-bottom: 1.5rem;'>{progress_html}</div><div style='height: 1px; background: linear-gradient(90deg, transparent, #1e293b, transparent); margin: 1.5rem 0;'></div><div style='display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;'><div><div class='data-label' style='margin-bottom: 0.5rem;'>TEE DATE</div><div style='font-size: 1rem; font-weight: 600; color: #f9fafb;'>{booking['date'].strftime('%b %d, %Y')}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>TEE TIME</div><div style='font-size: 1rem; font-weight: 600; color: #f9fafb;'>{tee_time_display}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>PLAYERS</div><div style='font-size: 1rem; font-weight: 600; color: #f9fafb;'>{booking['players']}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>TOTAL</div><div style='font-size: 1.5rem; font-weight: 700; color: #10b981;'>${booking['total']:,.2f}</div></div></div></div>"""
+        card_html = f"<div class='booking-card' style='background: linear-gradient(135deg, #3d5266 0%, #4a6278 100%); border: 2px solid #6b7c3f; border-radius: 12px; padding: 1.5rem; margin-bottom: 0.5rem; box-shadow: 0 4px 16px rgba(107, 124, 63, 0.3); transition: all 0.3s ease;'><div style='display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;'><div style='flex: 1;'><div style='display: flex; align-items: center;'><div class='booking-id' style='margin-bottom: 0.5rem;'>{html.escape(str(booking['booking_id']))}</div>{hotel_badge}</div><div class='booking-email'>{html.escape(str(booking['guest_email']))}</div></div><div style='text-align: right;'><div class='timestamp'>REQUESTED</div><div class='timestamp-value'>{requested_time}</div></div></div><div style='margin-bottom: 1.5rem;'>{progress_html}</div><div style='height: 1px; background: linear-gradient(90deg, transparent, #6b7c3f, transparent); margin: 1.5rem 0;'></div><div style='display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 1rem;'><div><div class='data-label' style='margin-bottom: 0.5rem;'>TEE DATE</div><div style='font-size: 1rem; font-weight: 600; color: #f7f5f2;'>{booking['date'].strftime('%b %d, %Y')}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>TEE TIME</div><div style='font-size: 1rem; font-weight: 600; color: #f7f5f2;'>{tee_time_display}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>PLAYERS</div><div style='font-size: 1rem; font-weight: 600; color: #f7f5f2;'>{booking['players']}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>TOTAL</div><div style='font-size: 1.5rem; font-weight: 700; color: #6b7c3f;'>${booking['total']:,.2f}</div></div></div>{golf_info_html}{hotel_dates_html}</div>"
 
         # Render the complete card
         st.markdown(card_html, unsafe_allow_html=True)
@@ -1379,8 +1407,8 @@ for idx, booking in filtered_df.iterrows():
 
             with detail_col1:
                 st.markdown("""
-                    <div style='background: #0f1419; padding: 0.75rem 1rem; border-radius: 8px 8px 0 0; border: 1px solid #1e293b; border-bottom: none; margin-bottom: 0;'>
-                        <div class='data-label' style='margin: 0;'>BOOKING NOTES</div>
+                    <div style='background: #4a6278; padding: 0.75rem 1rem; border-radius: 8px 8px 0 0; border: 2px solid #6b7c3f; border-bottom: none; margin-bottom: 0;'>
+                        <div style='color: #d4b896; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;'>Current Notes</div>
                     </div>
                 """, unsafe_allow_html=True)
 
@@ -1404,10 +1432,9 @@ for idx, booking in filtered_df.iterrows():
                 
                 if booking.get('updated_by') and not pd.isna(booking.get('updated_by')):
                     st.markdown(f"""
-                        <div style='margin-top: 1.5rem; padding: 1rem; background: #0f1419; border-radius: 8px; border: 1px solid #1e293b;'>
-                            <div class='data-label'>LAST UPDATED</div>
-                            <div style='color: #cbd5e1; font-size: 0.875rem; margin-top: 0.5rem;'>{booking['updated_at'].strftime('%b %d, %Y • %I:%M %p')}</div>
-                            <div style='color: #64748b; font-size: 0.8125rem; margin-top: 0.25rem;'>by {booking['updated_by']}</div>
+                        <div style='margin-top: 1rem; padding: 0.75rem; background: #3d5266; border-radius: 8px; border: 2px solid #6b7c3f;'>
+                            <div style='color: #d4b896; font-size: 0.7rem; font-weight: 600; text-transform: uppercase;'>Last Updated</div>
+                            <div style='color: #f7f5f2; font-size: 0.875rem; margin-top: 0.25rem;'>{booking['updated_at'].strftime('%b %d, %Y • %I:%M %p')} by {booking['updated_by']}</div>
                         </div>
                     """, unsafe_allow_html=True)
             
@@ -1446,8 +1473,8 @@ for idx, booking in filtered_df.iterrows():
                             st.rerun()
 
                 # Delete booking button (with confirmation)
-                st.markdown("<div style='margin-top: 1.5rem; border-top: 1px solid #1e293b; padding-top: 1rem;'></div>", unsafe_allow_html=True)
-                st.markdown("<div style='color: #dc2626; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;'>Danger Zone</div>", unsafe_allow_html=True)
+                st.markdown("<div style='margin-top: 1.5rem; border-top: 2px solid #6b7c3f; padding-top: 1rem;'></div>", unsafe_allow_html=True)
+                st.markdown("<div style='color: #cc8855; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;'>Danger Zone</div>", unsafe_allow_html=True)
 
                 # Initialize session state for delete confirmation
                 if f"confirm_delete_{booking['booking_id']}" not in st.session_state:
@@ -1472,7 +1499,7 @@ for idx, booking in filtered_df.iterrows():
                             st.session_state[f"confirm_delete_{booking['booking_id']}"] = False
                             st.rerun()
 
-st.markdown("<div style='height: 1px; background: #1e293b; margin: 2rem 0;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height: 2px; background: #6b7c3f; margin: 2rem 0;'></div>", unsafe_allow_html=True)
 st.markdown("#### Export Options")
 col1, col2, col3, col4 = st.columns(4)
 
