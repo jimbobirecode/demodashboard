@@ -1186,15 +1186,21 @@ if status_filter:
 if date_range:
     if isinstance(date_range, tuple) and len(date_range) == 2:
         start_date, end_date = date_range
+        # Convert date objects to datetime for comparison
+        start_datetime = pd.to_datetime(start_date)
+        end_datetime = pd.to_datetime(end_date)
         filtered_df = filtered_df[
-            (filtered_df['date'].dt.date >= start_date) &
-            (filtered_df['date'].dt.date <= end_date)
+            (filtered_df['date'] >= start_datetime) &
+            (filtered_df['date'] <= end_datetime)
         ]
     elif hasattr(date_range, '__len__') and len(date_range) == 2:
         start_date, end_date = date_range[0], date_range[1]
+        # Convert date objects to datetime for comparison
+        start_datetime = pd.to_datetime(start_date)
+        end_datetime = pd.to_datetime(end_date)
         filtered_df = filtered_df[
-            (filtered_df['date'].dt.date >= start_date) &
-            (filtered_df['date'].dt.date <= end_date)
+            (filtered_df['date'] >= start_datetime) &
+            (filtered_df['date'] <= end_datetime)
         ]
 
 col1, col2, col3, col4 = st.columns(4)
@@ -1433,34 +1439,27 @@ for idx, booking in filtered_df.iterrows():
 
                 current_status = booking['status']
 
-                if current_status in ['Inquiry', 'Pending']:
-                    if st.button("Mark as Requested", key=f"req_{booking['booking_id']}", use_container_width=True):
-                        if update_booking_status(booking['booking_id'], 'Requested', st.session_state.username):
-                            st.success("Updated")
+                # Status change dropdown - allows navigation to any status
+                st.markdown("<div style='margin-bottom: 1rem;'>", unsafe_allow_html=True)
+                all_statuses = ['Inquiry', 'Requested', 'Confirmed', 'Booked', 'Rejected', 'Cancelled']
+                # Set default to current status
+                current_index = all_statuses.index(current_status) if current_status in all_statuses else 0
+
+                new_status = st.selectbox(
+                    "Change Status To:",
+                    all_statuses,
+                    index=current_index,
+                    key=f"status_select_{booking['booking_id']}"
+                )
+
+                if new_status != current_status:
+                    if st.button("Update Status", key=f"update_status_{booking['booking_id']}", use_container_width=True):
+                        if update_booking_status(booking['booking_id'], new_status, st.session_state.username):
+                            st.success(f"Status updated to {new_status}")
                             st.cache_data.clear()
                             st.rerun()
 
-                if current_status == 'Requested':
-                    if st.button("Mark as Confirmed", key=f"conf_{booking['booking_id']}", use_container_width=True):
-                        if update_booking_status(booking['booking_id'], 'Confirmed', st.session_state.username):
-                            st.success("Updated")
-                            st.cache_data.clear()
-                            st.rerun()
-
-                if current_status == 'Confirmed':
-                    if st.button("Mark as Booked", key=f"book_{booking['booking_id']}", use_container_width=True):
-                        if update_booking_status(booking['booking_id'], 'Booked', st.session_state.username):
-                            st.success("Updated")
-                            st.cache_data.clear()
-                            st.rerun()
-
-                if current_status not in ['Rejected', 'Cancelled', 'Booked']:
-                    st.markdown("<div style='margin-top: 1rem;'></div>", unsafe_allow_html=True)
-                    if st.button("Reject", key=f"rej_{booking['booking_id']}", use_container_width=True):
-                        if update_booking_status(booking['booking_id'], 'Rejected', st.session_state.username):
-                            st.warning("Rejected")
-                            st.cache_data.clear()
-                            st.rerun()
+                st.markdown("</div>", unsafe_allow_html=True)
 
                 # Delete booking button (with confirmation)
                 st.markdown("<div style='margin-top: 1.5rem; border-top: 2px solid #6b7c3f; padding-top: 1rem;'></div>", unsafe_allow_html=True)
