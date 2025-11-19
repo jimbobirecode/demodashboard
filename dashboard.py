@@ -760,7 +760,7 @@ if not st.session_state.authenticated:
     with col2:
         st.markdown("<div class='login-logo-container'>", unsafe_allow_html=True)
         st.image("https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/images.png",
-                 use_column_width=True)
+                 width=300)
         st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("""
@@ -1063,7 +1063,7 @@ with st.sidebar:
         <div style='text-align: center; padding: 1rem 0.5rem; margin-bottom: 1rem;'>
     """, unsafe_allow_html=True)
     st.image("https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/images.png",
-             use_column_width=True)
+             width=200)
     st.markdown("""
         </div>
     """, unsafe_allow_html=True)
