@@ -24,10 +24,10 @@ def get_club_display_name(club_id: str) -> str:
     Maps internal club IDs to full display names.
     """
     club_mapping = {
-        'island': 'Island Golf Club',
-        'islandgolfclub': 'Island Golf Club',
-        'island-golf-club': 'Island Golf Club',
-        'island_golf_club': 'Island Golf Club',
+        'island': 'The Island Golf Club',
+        'islandgolfclub': 'The Island Golf Club',
+        'island-golf-club': 'The Island Golf Club',
+        'island_golf_club': 'The Island Golf Club',
     }
 
     # Try to find mapping (case insensitive)
@@ -63,29 +63,25 @@ def get_club_info(club_id: str) -> dict:
             'phone': '(555) 123-4567',
             'email': 'bookings@islandgolfclub.com',
             'location': 'Island Golf Club, Paradise Bay',
-            'website': 'www.islandgolfclub.com',
-            'icon': '🏝️'
+            'website': 'www.islandgolfclub.com'
         },
         'islandgolfclub': {
             'phone': '(555) 123-4567',
             'email': 'bookings@islandgolfclub.com',
             'location': 'Island Golf Club, Paradise Bay',
-            'website': 'www.islandgolfclub.com',
-            'icon': '🏝️'
+            'website': 'www.islandgolfclub.com'
         },
         'island-golf-club': {
             'phone': '(555) 123-4567',
             'email': 'bookings@islandgolfclub.com',
             'location': 'Island Golf Club, Paradise Bay',
-            'website': 'www.islandgolfclub.com',
-            'icon': '🏝️'
+            'website': 'www.islandgolfclub.com'
         },
         'island_golf_club': {
             'phone': '(555) 123-4567',
             'email': 'bookings@islandgolfclub.com',
             'location': 'Island Golf Club, Paradise Bay',
-            'website': 'www.islandgolfclub.com',
-            'icon': '🏝️'
+            'website': 'www.islandgolfclub.com'
         },
     }
 
@@ -94,8 +90,7 @@ def get_club_info(club_id: str) -> dict:
         'phone': 'N/A',
         'email': 'N/A',
         'location': 'N/A',
-        'website': 'N/A',
-        'icon': '🏌️'
+        'website': 'N/A'
     })
 
 def extract_tee_time_from_note(note_content):
@@ -380,8 +375,8 @@ def logout():
 # STREAMLIT PAGE CONFIG
 # ========================================
 st.set_page_config(
-    page_title="Island Golf Club Dashboard",
-    page_icon="🏝️",
+    page_title="The Island Golf Club Dashboard",
+    page_icon="⛳",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -706,7 +701,7 @@ if st.session_state.show_password_change:
 
     st.markdown("""
         <div class="password-container">
-            <div class="password-title">🏝️ Set Your Password</div>
+            <div class="password-title">Set Your Password</div>
             <div class="password-subtitle">First-time setup - create your secure password</div>
         </div>
     """, unsafe_allow_html=True)
@@ -768,11 +763,12 @@ if not st.session_state.authenticated:
         </style>
     """, unsafe_allow_html=True)
 
-    # Center the logo placeholder (you would use an actual logo image here)
-    col1, col2, col3 = st.columns([1, 1, 1])
+    # Center the logo
+    col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         st.markdown("<div class='login-logo-container'>", unsafe_allow_html=True)
-        st.markdown("<h1 style='text-align: center; color: #f9fafb;'>🏝️ Island Golf Club</h1>", unsafe_allow_html=True)
+        st.image("https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/images.png",
+                 use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("""
@@ -1070,10 +1066,13 @@ def update_booking_note(booking_id: str, note: str):
 # ========================================
 
 with st.sidebar:
-    # Island Golf Club logo placeholder (you would use an actual image here)
+    # The Island Golf Club logo
     st.markdown("""
-        <div style='text-align: center; padding: 1rem; margin-bottom: 1rem;'>
-            <h2 style='color: #60a5fa; margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px;'>🏝️ ISLAND GOLF CLUB</h2>
+        <div style='text-align: center; padding: 1rem 0.5rem; margin-bottom: 1rem;'>
+    """, unsafe_allow_html=True)
+    st.image("https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/images.png",
+             use_container_width=True)
+    st.markdown("""
         </div>
     """, unsafe_allow_html=True)
     st.markdown("""
@@ -1155,7 +1154,7 @@ with st.sidebar:
         st.rerun()
 
 st.markdown("""
-    <h1 style='margin-bottom: 1rem;'>Island Golf Club Dashboard</h1>
+    <h1 style='margin-bottom: 1rem;'>The Island Golf Club Dashboard</h1>
 """, unsafe_allow_html=True)
 
 # Header with refresh button
