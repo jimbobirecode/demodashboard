@@ -24,10 +24,10 @@ def get_club_display_name(club_id: str) -> str:
     Maps internal club IDs to full display names.
     """
     club_mapping = {
-        'island': 'Island Golf Club',
-        'islandgolfclub': 'Island Golf Club',
-        'island-golf-club': 'Island Golf Club',
-        'island_golf_club': 'Island Golf Club',
+        'island': 'The Island Golf Club',
+        'islandgolfclub': 'The Island Golf Club',
+        'island-golf-club': 'The Island Golf Club',
+        'island_golf_club': 'The Island Golf Club',
     }
 
     # Try to find mapping (case insensitive)
@@ -63,29 +63,25 @@ def get_club_info(club_id: str) -> dict:
             'phone': '(555) 123-4567',
             'email': 'bookings@islandgolfclub.com',
             'location': 'Island Golf Club, Paradise Bay',
-            'website': 'www.islandgolfclub.com',
-            'icon': '🏝️'
+            'website': 'www.islandgolfclub.com'
         },
         'islandgolfclub': {
             'phone': '(555) 123-4567',
             'email': 'bookings@islandgolfclub.com',
             'location': 'Island Golf Club, Paradise Bay',
-            'website': 'www.islandgolfclub.com',
-            'icon': '🏝️'
+            'website': 'www.islandgolfclub.com'
         },
         'island-golf-club': {
             'phone': '(555) 123-4567',
             'email': 'bookings@islandgolfclub.com',
             'location': 'Island Golf Club, Paradise Bay',
-            'website': 'www.islandgolfclub.com',
-            'icon': '🏝️'
+            'website': 'www.islandgolfclub.com'
         },
         'island_golf_club': {
             'phone': '(555) 123-4567',
             'email': 'bookings@islandgolfclub.com',
             'location': 'Island Golf Club, Paradise Bay',
-            'website': 'www.islandgolfclub.com',
-            'icon': '🏝️'
+            'website': 'www.islandgolfclub.com'
         },
     }
 
@@ -94,8 +90,7 @@ def get_club_info(club_id: str) -> dict:
         'phone': 'N/A',
         'email': 'N/A',
         'location': 'N/A',
-        'website': 'N/A',
-        'icon': '🏌️'
+        'website': 'N/A'
     })
 
 def extract_tee_time_from_note(note_content):
@@ -226,16 +221,8 @@ def update_last_login(user_id: int):
 # ========================================
 def get_status_icon(status: str) -> str:
     """Get timeline icon for booking status"""
-    status_icons = {
-        'Inquiry': '🔵',
-        'Requested': '🟡',
-        'Confirmed': '🟠',
-        'Booked': '✅',
-        'Rejected': '❌',
-        'Cancelled': '⚫',
-        'Pending': '🟡',
-    }
-    return status_icons.get(status, '⚪')
+    # Icons removed - using text-based status indicators only
+    return ''
 
 
 def get_status_color(status: str) -> str:
@@ -380,8 +367,8 @@ def logout():
 # STREAMLIT PAGE CONFIG
 # ========================================
 st.set_page_config(
-    page_title="Island Golf Club Dashboard",
-    page_icon="🏝️",
+    page_title="The Island Golf Club Dashboard",
+    page_icon="⛳",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -706,20 +693,20 @@ if st.session_state.show_password_change:
 
     st.markdown("""
         <div class="password-container">
-            <div class="password-title">🏝️ Set Your Password</div>
+            <div class="password-title">Set Your Password</div>
             <div class="password-subtitle">First-time setup - create your secure password</div>
         </div>
     """, unsafe_allow_html=True)
     
     with st.form("password_setup_form"):
-        st.info(f"👋 Welcome, **{st.session_state.full_name}**! Please create a secure password for your account.")
+        st.info(f"Welcome, **{st.session_state.full_name}**! Please create a secure password for your account.")
         
         new_password = st.text_input("New Password", type="password", key="new_pass")
         confirm_password = st.text_input("Confirm Password", type="password", key="confirm_pass")
         
         col1, col2 = st.columns([1, 1])
         with col1:
-            submit = st.form_submit_button("✅ Set Password", use_container_width=True)
+            submit = st.form_submit_button("Set Password", use_container_width=True)
         with col2:
             cancel = st.form_submit_button("Cancel", use_container_width=True)
         
@@ -729,20 +716,20 @@ if st.session_state.show_password_change:
         
         if submit:
             if not new_password or not confirm_password:
-                st.error("❌ Please fill in both password fields")
+                st.error("Please fill in both password fields")
             elif new_password != confirm_password:
-                st.error("❌ Passwords do not match")
+                st.error("Passwords do not match")
             elif len(new_password) < 8:
-                st.error("❌ Password must be at least 8 characters")
+                st.error("Password must be at least 8 characters")
             else:
                 if set_permanent_password(st.session_state.user_id, new_password):
                     update_last_login(st.session_state.user_id)
                     st.session_state.show_password_change = False
                     st.session_state.must_change_password = False
-                    st.success("✅ Password set successfully!")
+                    st.success("Password set successfully!")
                     st.rerun()
                 else:
-                    st.error("❌ Error setting password. Please try again.")
+                    st.error("Error setting password. Please try again.")
     
     st.stop()
 
@@ -768,11 +755,12 @@ if not st.session_state.authenticated:
         </style>
     """, unsafe_allow_html=True)
 
-    # Center the logo placeholder (you would use an actual logo image here)
-    col1, col2, col3 = st.columns([1, 1, 1])
+    # Center the logo
+    col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         st.markdown("<div class='login-logo-container'>", unsafe_allow_html=True)
-        st.markdown("<h1 style='text-align: center; color: #f9fafb;'>🏝️ Island Golf Club</h1>", unsafe_allow_html=True)
+        st.image("https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/images.png",
+                 use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("""
@@ -782,7 +770,7 @@ if not st.session_state.authenticated:
     with st.form("login_form"):
         username = st.text_input("Username", key="login_username")
         password = st.text_input("Password", type="password", key="login_password")
-        submit = st.form_submit_button("🔐 Login", use_container_width=True)
+        submit = st.form_submit_button("Login", use_container_width=True)
         
         if submit:
             if username and password:
@@ -794,20 +782,20 @@ if not st.session_state.authenticated:
                     st.session_state.username = username
                     st.session_state.full_name = full_name
                     st.session_state.user_id = user_id
-                    
+
                     if must_change:
                         st.session_state.must_change_password = True
                         st.session_state.show_password_change = True
-                        st.success("✅ Please set your password...")
+                        st.success("Please set your password...")
                         st.rerun()
                     else:
                         update_last_login(user_id)
-                        st.success("✅ Login successful!")
+                        st.success("Login successful!")
                         st.rerun()
                 else:
-                    st.error("❌ Invalid username or password")
+                    st.error("Invalid username or password")
             else:
-                st.error("❌ Please enter username and password")
+                st.error("Please enter username and password")
     
     st.markdown("""
         <div style='text-align: center; color: #6b7280; font-size: 0.85rem; margin-top: 2rem;'>
@@ -919,7 +907,7 @@ def load_bookings_from_db(club_filter):
 
         return df, 'postgresql'
     except Exception as e:
-        st.error(f"❌ Database error: {e}")
+        st.error(f"Database error: {e}")
         import traceback
         st.error(f"Details: {traceback.format_exc()}")
         return pd.DataFrame(), 'error'
@@ -1070,10 +1058,13 @@ def update_booking_note(booking_id: str, note: str):
 # ========================================
 
 with st.sidebar:
-    # Island Golf Club logo placeholder (you would use an actual image here)
+    # The Island Golf Club logo
     st.markdown("""
-        <div style='text-align: center; padding: 1rem; margin-bottom: 1rem;'>
-            <h2 style='color: #60a5fa; margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px;'>🏝️ ISLAND GOLF CLUB</h2>
+        <div style='text-align: center; padding: 1rem 0.5rem; margin-bottom: 1rem;'>
+    """, unsafe_allow_html=True)
+    st.image("https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/images.png",
+             use_container_width=True)
+    st.markdown("""
         </div>
     """, unsafe_allow_html=True)
     st.markdown("""
@@ -1155,7 +1146,7 @@ with st.sidebar:
         st.rerun()
 
 st.markdown("""
-    <h1 style='margin-bottom: 1rem;'>Island Golf Club Dashboard</h1>
+    <h1 style='margin-bottom: 1rem;'>The Island Golf Club Dashboard</h1>
 """, unsafe_allow_html=True)
 
 # Header with refresh button
@@ -1166,7 +1157,7 @@ with header_col1:
         <p style='color: #93c5fd; margin-bottom: 1rem; font-size: 0.9375rem;'>Manage and track all incoming tee time requests</p>
     """, unsafe_allow_html=True)
 with header_col2:
-    if st.button("🔄 Refresh", key="refresh_bookings", use_container_width=True, help="Refresh booking data"):
+    if st.button("Refresh", key="refresh_bookings", use_container_width=True, help="Refresh booking data"):
         st.cache_data.clear()
         st.rerun()
 
@@ -1395,7 +1386,7 @@ for idx, booking in filtered_df.iterrows():
 
             with status_col4:
                 if booking['status'] not in ['Rejected', 'Cancelled', 'Booked']:
-                    if st.button("✕ Reject", key=f"quick_rej_{booking['booking_id']}", use_container_width=True, help="Reject this booking"):
+                    if st.button("Reject", key=f"quick_rej_{booking['booking_id']}", use_container_width=True, help="Reject this booking"):
                         if update_booking_status(booking['booking_id'], 'Rejected', st.session_state.username):
                             st.cache_data.clear()
                             st.rerun()
@@ -1424,7 +1415,7 @@ for idx, booking in filtered_df.iterrows():
 
                 # Save notes button
                 if updated_note != note_content:
-                    if st.button("💾 Save Notes", key=f"save_note_{booking['booking_id']}", use_container_width=True):
+                    if st.button("Save Notes", key=f"save_note_{booking['booking_id']}", use_container_width=True):
                         if update_booking_note(booking['booking_id'], updated_note):
                             st.success("Notes saved successfully!")
                             st.cache_data.clear()
@@ -1481,21 +1472,21 @@ for idx, booking in filtered_df.iterrows():
                     st.session_state[f"confirm_delete_{booking['booking_id']}"] = False
 
                 if not st.session_state[f"confirm_delete_{booking['booking_id']}"]:
-                    if st.button("🗑️ Delete Booking", key=f"del_{booking['booking_id']}", use_container_width=True, type="secondary"):
+                    if st.button("Delete Booking", key=f"del_{booking['booking_id']}", use_container_width=True, type="secondary"):
                         st.session_state[f"confirm_delete_{booking['booking_id']}"] = True
                         st.rerun()
                 else:
-                    st.warning("⚠️ Are you sure? This action cannot be undone.")
+                    st.warning("Are you sure? This action cannot be undone.")
                     col_confirm1, col_confirm2 = st.columns(2)
                     with col_confirm1:
-                        if st.button("✓ Yes, Delete", key=f"confirm_del_{booking['booking_id']}", use_container_width=True):
+                        if st.button("Yes, Delete", key=f"confirm_del_{booking['booking_id']}", use_container_width=True):
                             if delete_booking(booking['booking_id']):
                                 st.success("Booking deleted successfully!")
                                 st.cache_data.clear()
                                 st.session_state[f"confirm_delete_{booking['booking_id']}"] = False
                                 st.rerun()
                     with col_confirm2:
-                        if st.button("✕ Cancel", key=f"cancel_del_{booking['booking_id']}", use_container_width=True):
+                        if st.button("Cancel", key=f"cancel_del_{booking['booking_id']}", use_container_width=True):
                             st.session_state[f"confirm_delete_{booking['booking_id']}"] = False
                             st.rerun()
 
@@ -1538,10 +1529,10 @@ with col4:
         with st.spinner("Extracting tee times from email content..."):
             updated, not_found = fix_all_tee_times(st.session_state.customer_id)
             if updated > 0:
-                st.success(f"✅ Updated {updated} booking(s) with extracted tee times!")
+                st.success(f"Updated {updated} booking(s) with extracted tee times!")
                 st.cache_data.clear()
                 st.rerun()
             elif not_found > 0:
-                st.warning(f"⚠️ Could not extract tee times from {not_found} booking(s)")
+                st.warning(f"Could not extract tee times from {not_found} booking(s)")
             else:
                 st.info("All bookings already have tee times set")
