@@ -1379,7 +1379,7 @@ if page == "Bookings":
                 golf_info_html = f"<div style='background: #10b981; padding: 1rem; border-radius: 8px; margin-top: 1rem;'><div style='color: #ffffff; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;'>Golf Courses & Tee Times</div><div style='display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;'><div><div style='color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Courses</div><div style='color: #ffffff; font-size: 0.875rem; font-weight: 600; line-height: 1.5;'>{html.escape(courses_list)}</div></div><div><div style='color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Tee Times</div><div style='color: #ffffff; font-size: 0.875rem; font-weight: 600; line-height: 1.5;'>{html.escape(times_list)}</div></div></div></div>"
     
             # Build complete card HTML including progress bar and details
-            card_html = f"<div class='booking-card' style='background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border: 2px solid #3b82f6; border-radius: 12px; padding: 1.5rem; margin-bottom: 0.5rem; box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3); transition: all 0.3s ease;'><div style='display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;'><div style='flex: 1;'><div style='display: flex; align-items: center;'><div class='booking-id' style='margin-bottom: 0.5rem;'>{html.escape(str(booking['booking_id']))}</div>{hotel_badge}</div><div class='booking-email'>{html.escape(str(booking['guest_email']))}</div></div><div style='text-align: right;'><div class='timestamp'>REQUESTED</div><div class='timestamp-value'>{requested_time}</div></div></div><div style='margin-bottom: 1.5rem;'>{progress_html}</div><div style='height: 1px; background: linear-gradient(90deg, transparent, #3b82f6, transparent); margin: 1.5rem 0;'></div><div style='display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 1rem;'><div><div class='data-label' style='margin-bottom: 0.5rem;'>TEE DATE</div><div style='font-size: 1rem; font-weight: 600; color: #f9fafb;'>{booking['date'].strftime('%b %d, %Y')}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>TEE TIME</div><div style='font-size: 1rem; font-weight: 600; color: #f9fafb;'>{tee_time_display}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>PLAYERS</div><div style='font-size: 1rem; font-weight: 600; color: #f9fafb;'>{booking['players']}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>TOTAL</div><div style='font-size: 1.5rem; font-weight: 700; color: #10b981;'>${booking['total']:,.2f}</div></div></div>{golf_info_html}{hotel_dates_html}</div>"
+            card_html = f"<div class='booking-card' style='background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border: 2px solid #3b82f6; border-radius: 12px; padding: 1.5rem; margin-bottom: 0.5rem; box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3); transition: all 0.3s ease;'><div style='display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;'><div style='flex: 1;'><div style='display: flex; align-items: center;'><div class='booking-id' style='margin-bottom: 0.5rem;'>{html.escape(str(booking['booking_id']))}</div>{hotel_badge}</div><div class='booking-email'>{html.escape(str(booking['guest_email']))}</div></div><div style='text-align: right;'><div class='timestamp'>REQUESTED</div><div class='timestamp-value'>{requested_time}</div></div></div><div style='margin-bottom: 1.5rem;'>{progress_html}</div><div style='height: 1px; background: linear-gradient(90deg, transparent, #3b82f6, transparent); margin: 1.5rem 0;'></div><div style='display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 1rem;'><div><div class='data-label' style='margin-bottom: 0.5rem;'>TEE DATE</div><div style='font-size: 1rem; font-weight: 600; color: #f9fafb;'>{booking['date'].strftime('%b %d, %Y')}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>TEE TIME</div><div style='font-size: 1rem; font-weight: 600; color: #f9fafb;'>{tee_time_display}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>PLAYERS</div><div style='font-size: 1rem; font-weight: 600; color: #f9fafb;'>{booking['players']}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>TOTAL</div><div style='font-size: 1.5rem; font-weight: 700; color: #10b981;'>€{booking['total']:,.2f}</div></div></div>{golf_info_html}{hotel_dates_html}</div>"
     
             # Render the complete card
             st.markdown(card_html, unsafe_allow_html=True)
@@ -1643,7 +1643,7 @@ elif page == "Reports & Analytics":
         st.markdown(f"""
             <div style='background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); border: 2px solid #3b82f6; border-radius: 12px; padding: 1.5rem; text-align: center;'>
                 <div style='color: #93c5fd; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Total Revenue</div>
-                <div style='color: #10b981; font-size: 2.5rem; font-weight: 700;'>${total_revenue:,.0f}</div>
+                <div style='color: #10b981; font-size: 2.5rem; font-weight: 700;'>€{total_revenue:,.0f}</div>
             </div>
         """, unsafe_allow_html=True)
 
@@ -1652,7 +1652,7 @@ elif page == "Reports & Analytics":
         st.markdown(f"""
             <div style='background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); border: 2px solid #3b82f6; border-radius: 12px; padding: 1.5rem; text-align: center;'>
                 <div style='color: #93c5fd; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Avg Booking Value</div>
-                <div style='color: #f9fafb; font-size: 2.5rem; font-weight: 700;'>${avg_booking_value:,.0f}</div>
+                <div style='color: #f9fafb; font-size: 2.5rem; font-weight: 700;'>€{avg_booking_value:,.0f}</div>
             </div>
         """, unsafe_allow_html=True)
 
@@ -1717,7 +1717,7 @@ elif page == "Reports & Analytics":
                 <div style='background: #2563eb; border: 2px solid #3b82f6; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;'>
                     <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;'>
                         <div style='color: #f9fafb; font-weight: 600; font-size: 1rem;'>{status}</div>
-                        <div style='color: #10b981; font-weight: 700; font-size: 1.125rem;'>${revenue:,.0f}</div>
+                        <div style='color: #10b981; font-weight: 700; font-size: 1.125rem;'>€{revenue:,.0f}</div>
                     </div>
                     <div style='background: #1e3a8a; border-radius: 4px; height: 8px; overflow: hidden;'>
                         <div style='background: linear-gradient(90deg, #10b981, #3b82f6); height: 100%; width: {bar_width}%;'></div>
@@ -1759,7 +1759,7 @@ elif page == "Reports & Analytics":
                             <span style='color: #f9fafb; font-weight: 600; font-size: 0.75rem;'>{int(row['Bookings'])}</span>
                         </div>
                     </div>
-                    <div style='color: #10b981; font-weight: 700; min-width: 80px; text-align: right; font-size: 0.875rem;'>${row['Revenue']:,.0f}</div>
+                    <div style='color: #10b981; font-weight: 700; min-width: 80px; text-align: right; font-size: 0.875rem;'>€{row['Revenue']:,.0f}</div>
                 </div>
             """, unsafe_allow_html=True)
 
@@ -1902,7 +1902,7 @@ elif page == "Reports & Analytics":
                 # Summary sheet
                 summary_data = {
                     'Metric': ['Total Bookings', 'Total Revenue', 'Avg Booking Value', 'Total Players'],
-                    'Value': [total_bookings, f"${total_revenue:,.2f}", f"${avg_booking_value:,.2f}", int(total_players)]
+                    'Value': [total_bookings, f"€{total_revenue:,.2f}", f"€{avg_booking_value:,.2f}", int(total_players)]
                 }
                 pd.DataFrame(summary_data).to_excel(writer, index=False, sheet_name='Summary')
 
