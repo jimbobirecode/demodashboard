@@ -1088,449 +1088,853 @@ with st.sidebar:
 
     st.markdown("<div style='height: 1px; background: #3b82f6; margin: 1.5rem 0;'></div>", unsafe_allow_html=True)
 
-    st.markdown("#### Filters")
+    # Navigation menu
+    st.markdown("#### Navigation")
+    if 'current_page' not in st.session_state:
+        st.session_state.current_page = "Bookings"
 
-    # Initialize filter state
-    if 'auto_include_status' not in st.session_state:
-        st.session_state.auto_include_status = set()
-    if 'clicked_status_filter' not in st.session_state:
-        st.session_state.clicked_status_filter = None
-    if 'date_filter_preset' not in st.session_state:
-        st.session_state.date_filter_preset = "Next 30 Days"
-
-    # Date preset selector
-    date_preset = st.selectbox(
-        "Date Preset",
-        ["Today", "Next 7 Days", "Next 30 Days", "Next 60 Days", "Next 90 Days", "All Upcoming", "Custom"],
-        index=2  # Default to "Next 30 Days"
+    page = st.radio(
+        "Select View",
+        ["Bookings", "Reports & Analytics"],
+        index=0 if st.session_state.current_page == "Bookings" else 1,
+        label_visibility="collapsed"
     )
+    st.session_state.current_page = page
 
-    # Calculate date range based on preset
-    if date_preset == "Today":
-        date_range = (datetime.now().date(), datetime.now().date())
-    elif date_preset == "Next 7 Days":
-        date_range = (datetime.now().date(), datetime.now().date() + timedelta(days=7))
-    elif date_preset == "Next 30 Days":
-        date_range = (datetime.now().date(), datetime.now().date() + timedelta(days=30))
-    elif date_preset == "Next 60 Days":
-        date_range = (datetime.now().date(), datetime.now().date() + timedelta(days=60))
-    elif date_preset == "Next 90 Days":
-        date_range = (datetime.now().date(), datetime.now().date() + timedelta(days=90))
-    elif date_preset == "All Upcoming":
-        date_range = (datetime.now().date(), datetime.now().date() + timedelta(days=365))
-    else:  # Custom
-        date_range = st.date_input(
-            "Custom Date Range",
-            value=(datetime.now().date(), datetime.now().date() + timedelta(days=30))
+    st.markdown("<div style='height: 1px; background: #3b82f6; margin: 1.5rem 0;'></div>", unsafe_allow_html=True)
+
+    # Only show filters for Bookings page
+    if page == "Bookings":
+        st.markdown("#### Filters")
+
+        # Initialize filter state
+        if 'auto_include_status' not in st.session_state:
+            st.session_state.auto_include_status = set()
+        if 'clicked_status_filter' not in st.session_state:
+            st.session_state.clicked_status_filter = None
+        if 'date_filter_preset' not in st.session_state:
+            st.session_state.date_filter_preset = "Next 30 Days"
+
+        # Date preset selector
+        date_preset = st.selectbox(
+            "Date Preset",
+            ["Today", "Next 7 Days", "Next 30 Days", "Next 60 Days", "Next 90 Days", "All Upcoming", "Custom"],
+            index=2  # Default to "Next 30 Days"
         )
 
-    # Status filter - if clicked from metric card, use that
-    if st.session_state.clicked_status_filter:
-        default_statuses = [st.session_state.clicked_status_filter]
-    else:
-        # Merge default statuses with auto-included ones
-        default_statuses = ["Inquiry", "Requested", "Confirmed", "Booked", "Pending"]
-        default_statuses = list(set(default_statuses) | st.session_state.auto_include_status)
+        # Calculate date range based on preset
+        if date_preset == "Today":
+            date_range = (datetime.now().date(), datetime.now().date())
+        elif date_preset == "Next 7 Days":
+            date_range = (datetime.now().date(), datetime.now().date() + timedelta(days=7))
+        elif date_preset == "Next 30 Days":
+            date_range = (datetime.now().date(), datetime.now().date() + timedelta(days=30))
+        elif date_preset == "Next 60 Days":
+            date_range = (datetime.now().date(), datetime.now().date() + timedelta(days=60))
+        elif date_preset == "Next 90 Days":
+            date_range = (datetime.now().date(), datetime.now().date() + timedelta(days=90))
+        elif date_preset == "All Upcoming":
+            date_range = (datetime.now().date(), datetime.now().date() + timedelta(days=365))
+        else:  # Custom
+            date_range = st.date_input(
+                "Custom Date Range",
+                value=(datetime.now().date(), datetime.now().date() + timedelta(days=30))
+            )
 
-    status_filter = st.multiselect(
-        "Status",
-        ["Inquiry", "Requested", "Confirmed", "Booked", "Rejected", "Cancelled", "Pending"],
-        default=default_statuses
-    )
+        # Status filter - if clicked from metric card, use that
+        if st.session_state.clicked_status_filter:
+            default_statuses = [st.session_state.clicked_status_filter]
+        else:
+            # Merge default statuses with auto-included ones
+            default_statuses = ["Inquiry", "Requested", "Confirmed", "Booked", "Pending"]
+            default_statuses = list(set(default_statuses) | st.session_state.auto_include_status)
 
-    # Clear filter button
-    if st.button("Clear All Filters", use_container_width=True):
-        st.session_state.clicked_status_filter = None
-        st.cache_data.clear()
-        st.rerun()
+        status_filter = st.multiselect(
+            "Status",
+            ["Inquiry", "Requested", "Confirmed", "Booked", "Rejected", "Cancelled", "Pending"],
+            default=default_statuses
+        )
 
-st.markdown("""
-    <h1 style='margin-bottom: 1rem;'>The Island Golf Club Dashboard</h1>
-""", unsafe_allow_html=True)
+        # Clear filter button
+        if st.button("Clear All Filters", use_container_width=True):
+            st.session_state.clicked_status_filter = None
+            st.cache_data.clear()
+            st.rerun()
 
-# Header with refresh button
-header_col1, header_col2 = st.columns([4, 1])
-with header_col1:
+# ========================================
+# BOOKINGS VIEW
+# ========================================
+if page == "Bookings":
     st.markdown("""
-        <h2 style='margin-bottom: 0.5rem;'>Booking Requests</h2>
-        <p style='color: #93c5fd; margin-bottom: 1rem; font-size: 0.9375rem;'>Manage and track all incoming tee time requests</p>
+        <h1 style='margin-bottom: 1rem;'>The Island Golf Club Dashboard</h1>
     """, unsafe_allow_html=True)
-with header_col2:
-    if st.button("Refresh", key="refresh_bookings", use_container_width=True, help="Refresh booking data"):
-        st.cache_data.clear()
-        st.rerun()
 
-# Show active filter indicator
-if st.session_state.clicked_status_filter:
-    st.markdown(f"""
-        <div style='background: #1e3a8a; border: 2px solid #3b82f6; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;'>
-            <div style='display: flex; align-items: center; gap: 0.5rem;'>
-                <span style='color: #60a5fa; font-weight: 600; font-size: 1rem;'>Filtering by: {st.session_state.clicked_status_filter}</span>
+    # Header with refresh button
+    header_col1, header_col2 = st.columns([4, 1])
+    with header_col1:
+        st.markdown("""
+            <h2 style='margin-bottom: 0.5rem;'>Booking Requests</h2>
+            <p style='color: #93c5fd; margin-bottom: 1rem; font-size: 0.9375rem;'>Manage and track all incoming tee time requests</p>
+        """, unsafe_allow_html=True)
+    with header_col2:
+        if st.button("Refresh", key="refresh_bookings", use_container_width=True, help="Refresh booking data"):
+            st.cache_data.clear()
+            st.rerun()
+    
+    # Show active filter indicator
+    if st.session_state.clicked_status_filter:
+        st.markdown(f"""
+            <div style='background: #1e3a8a; border: 2px solid #3b82f6; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;'>
+                <div style='display: flex; align-items: center; gap: 0.5rem;'>
+                    <span style='color: #60a5fa; font-weight: 600; font-size: 1rem;'>Filtering by: {st.session_state.clicked_status_filter}</span>
+                </div>
             </div>
-        </div>
-    """, unsafe_allow_html=True)
-else:
-    st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
-
-df, source = load_bookings_from_db(st.session_state.customer_id)
-
-if df.empty:
-    st.info("No bookings found")
-    st.stop()
-
-filtered_df = df.copy()
-if status_filter:
-    filtered_df = filtered_df[filtered_df['status'].isin(status_filter)]
-
-# Handle date range filtering
-if date_range:
-    if isinstance(date_range, tuple) and len(date_range) == 2:
-        start_date, end_date = date_range
-        # Convert date objects to datetime for comparison
-        start_datetime = pd.to_datetime(start_date)
-        end_datetime = pd.to_datetime(end_date)
-        filtered_df = filtered_df[
-            (filtered_df['date'] >= start_datetime) &
-            (filtered_df['date'] <= end_datetime)
-        ]
-    elif hasattr(date_range, '__len__') and len(date_range) == 2:
-        start_date, end_date = date_range[0], date_range[1]
-        # Convert date objects to datetime for comparison
-        start_datetime = pd.to_datetime(start_date)
-        end_datetime = pd.to_datetime(end_date)
-        filtered_df = filtered_df[
-            (filtered_df['date'] >= start_datetime) &
-            (filtered_df['date'] <= end_datetime)
-        ]
-
-col1, col2, col3, col4 = st.columns(4)
-
-# Calculate counts for all statuses (before filtering)
-all_inquiry_count = len(df[df['status'].isin(['Inquiry', 'Pending'])])
-all_requested_count = len(df[df['status'] == 'Requested'])
-all_confirmed_count = len(df[df['status'] == 'Confirmed'])
-all_booked_count = len(df[df['status'] == 'Booked'])
-
-with col1:
-    inquiry_count = len(filtered_df[filtered_df['status'].isin(['Inquiry', 'Pending'])])
-    if st.button(f"Inquiry\n{all_inquiry_count}", key="filter_inquiry", use_container_width=True, help="Click to filter Inquiry status"):
-        st.session_state.clicked_status_filter = "Inquiry"
-        st.cache_data.clear()
-        st.rerun()
-    st.markdown(f"<div style='text-align: center; color: #93c5fd; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {inquiry_count}</div>", unsafe_allow_html=True)
-
-with col2:
-    requested_count = len(filtered_df[filtered_df['status'] == 'Requested'])
-    if st.button(f"Requested\n{all_requested_count}", key="filter_requested", use_container_width=True, help="Click to filter Requested status"):
-        st.session_state.clicked_status_filter = "Requested"
-        st.cache_data.clear()
-        st.rerun()
-    st.markdown(f"<div style='text-align: center; color: #93c5fd; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {requested_count}</div>", unsafe_allow_html=True)
-
-with col3:
-    confirmed_count = len(filtered_df[filtered_df['status'] == 'Confirmed'])
-    if st.button(f"Confirmed\n{all_confirmed_count}", key="filter_confirmed", use_container_width=True, help="Click to filter Confirmed status"):
-        st.session_state.clicked_status_filter = "Confirmed"
-        st.cache_data.clear()
-        st.rerun()
-    st.markdown(f"<div style='text-align: center; color: #93c5fd; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {confirmed_count}</div>", unsafe_allow_html=True)
-
-with col4:
-    booked_count = len(filtered_df[filtered_df['status'] == 'Booked'])
-    if st.button(f"Booked\n{all_booked_count}", key="filter_booked", use_container_width=True, help="Click to filter Booked status"):
-        st.session_state.clicked_status_filter = "Booked"
-        st.cache_data.clear()
-        st.rerun()
-    st.markdown(f"<div style='text-align: center; color: #93c5fd; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {booked_count}</div>", unsafe_allow_html=True)
-
-st.markdown("<div style='height: 2px; background: #3b82f6; margin: 2rem 0;'></div>", unsafe_allow_html=True)
-
-# Format date range string
-if date_range:
-    if isinstance(date_range, tuple) and len(date_range) == 2:
-        date_str = f"{date_range[0].strftime('%b %d')} to {date_range[1].strftime('%b %d, %Y')}"
-    elif hasattr(date_range, '__len__') and len(date_range) == 2:
-        date_str = f"{date_range[0].strftime('%b %d')} to {date_range[1].strftime('%b %d, %Y')}"
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
+    
+    df, source = load_bookings_from_db(st.session_state.customer_id)
+    
+    if df.empty:
+        st.info("No bookings found")
+        st.stop()
+    
+    filtered_df = df.copy()
+    if status_filter:
+        filtered_df = filtered_df[filtered_df['status'].isin(status_filter)]
+    
+    # Handle date range filtering
+    if date_range:
+        if isinstance(date_range, tuple) and len(date_range) == 2:
+            start_date, end_date = date_range
+            # Convert date objects to datetime for comparison
+            start_datetime = pd.to_datetime(start_date)
+            end_datetime = pd.to_datetime(end_date)
+            filtered_df = filtered_df[
+                (filtered_df['date'] >= start_datetime) &
+                (filtered_df['date'] <= end_datetime)
+            ]
+        elif hasattr(date_range, '__len__') and len(date_range) == 2:
+            start_date, end_date = date_range[0], date_range[1]
+            # Convert date objects to datetime for comparison
+            start_datetime = pd.to_datetime(start_date)
+            end_datetime = pd.to_datetime(end_date)
+            filtered_df = filtered_df[
+                (filtered_df['date'] >= start_datetime) &
+                (filtered_df['date'] <= end_datetime)
+            ]
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    # Calculate counts for all statuses (before filtering)
+    all_inquiry_count = len(df[df['status'].isin(['Inquiry', 'Pending'])])
+    all_requested_count = len(df[df['status'] == 'Requested'])
+    all_confirmed_count = len(df[df['status'] == 'Confirmed'])
+    all_booked_count = len(df[df['status'] == 'Booked'])
+    
+    with col1:
+        inquiry_count = len(filtered_df[filtered_df['status'].isin(['Inquiry', 'Pending'])])
+        if st.button(f"Inquiry\n{all_inquiry_count}", key="filter_inquiry", use_container_width=True, help="Click to filter Inquiry status"):
+            st.session_state.clicked_status_filter = "Inquiry"
+            st.cache_data.clear()
+            st.rerun()
+        st.markdown(f"<div style='text-align: center; color: #93c5fd; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {inquiry_count}</div>", unsafe_allow_html=True)
+    
+    with col2:
+        requested_count = len(filtered_df[filtered_df['status'] == 'Requested'])
+        if st.button(f"Requested\n{all_requested_count}", key="filter_requested", use_container_width=True, help="Click to filter Requested status"):
+            st.session_state.clicked_status_filter = "Requested"
+            st.cache_data.clear()
+            st.rerun()
+        st.markdown(f"<div style='text-align: center; color: #93c5fd; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {requested_count}</div>", unsafe_allow_html=True)
+    
+    with col3:
+        confirmed_count = len(filtered_df[filtered_df['status'] == 'Confirmed'])
+        if st.button(f"Confirmed\n{all_confirmed_count}", key="filter_confirmed", use_container_width=True, help="Click to filter Confirmed status"):
+            st.session_state.clicked_status_filter = "Confirmed"
+            st.cache_data.clear()
+            st.rerun()
+        st.markdown(f"<div style='text-align: center; color: #93c5fd; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {confirmed_count}</div>", unsafe_allow_html=True)
+    
+    with col4:
+        booked_count = len(filtered_df[filtered_df['status'] == 'Booked'])
+        if st.button(f"Booked\n{all_booked_count}", key="filter_booked", use_container_width=True, help="Click to filter Booked status"):
+            st.session_state.clicked_status_filter = "Booked"
+            st.cache_data.clear()
+            st.rerun()
+        st.markdown(f"<div style='text-align: center; color: #93c5fd; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {booked_count}</div>", unsafe_allow_html=True)
+    
+    st.markdown("<div style='height: 2px; background: #3b82f6; margin: 2rem 0;'></div>", unsafe_allow_html=True)
+    
+    # Format date range string
+    if date_range:
+        if isinstance(date_range, tuple) and len(date_range) == 2:
+            date_str = f"{date_range[0].strftime('%b %d')} to {date_range[1].strftime('%b %d, %Y')}"
+        elif hasattr(date_range, '__len__') and len(date_range) == 2:
+            date_str = f"{date_range[0].strftime('%b %d')} to {date_range[1].strftime('%b %d, %Y')}"
+        else:
+            date_str = "all dates"
     else:
         date_str = "all dates"
-else:
-    date_str = "all dates"
-
-st.markdown(f"""
-    <div style='margin-bottom: 1.5rem;'>
-        <h3 style='color: #f9fafb; font-weight: 600; font-size: 1.125rem;'>{len(filtered_df)} Active Requests</h3>
-        <p style='color: #64748b; font-size: 0.875rem; margin-top: 0.25rem;'>Showing bookings from {date_str}</p>
-    </div>
-""", unsafe_allow_html=True)
-
-# Add visual separator
-st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
-
-# ========================================
-# BOOKING CARDS - ENHANCED VERSION
-# ========================================
-for idx, booking in filtered_df.iterrows():
-    status_icon = get_status_icon(booking['status'])
-    status_class = get_status_color(booking['status'])
-
-    tee_time_display = booking.get('tee_time', 'Not Specified')
-    if tee_time_display == 'None' or tee_time_display is None or pd.isna(tee_time_display):
-        tee_time_display = 'Not Specified'
-
-    note_content = booking.get('note', '')
-    if note_content is None or pd.isna(note_content):
-        note_content = 'No additional information provided'
-
-    # Prepare progress bar data
-    current_status = booking['status']
-    if current_status == 'Pending':
-        current_status = 'Inquiry'
-
-    stages = [
-        {'name': 'Inquiry', 'color': '#60a5fa'},
-        {'name': 'Requested', 'color': '#eab308'},
-        {'name': 'Confirmed', 'color': '#22c55e'},
-        {'name': 'Booked', 'color': '#10b981'}
-    ]
-
-    is_rejected = current_status == 'Rejected'
-    is_cancelled = current_status == 'Cancelled'
-    current_index = next((i for i, s in enumerate(stages) if s['name'] == current_status), 0)
-    progress_width = (current_index / (len(stages) - 1)) * 100 if len(stages) > 1 else 0
-
-    # Format requested time
-    requested_time = booking['timestamp'].strftime('%b %d • %I:%M %p')
-
-    with st.container():
-        # Build progress bar HTML inline
-        if is_rejected or is_cancelled:
-            status_color = '#ef4444' if is_rejected else '#64748b'
-            progress_html = f"<div style='background: #1e3a8a; padding: 1rem; border-radius: 8px; border: 2px solid #3b82f6;'><div style='display: flex; align-items: center; justify-content: center; gap: 0.75rem;'><div style='width: 12px; height: 12px; border-radius: 50%; background: {status_color};'></div><span style='color: {status_color}; font-weight: 700; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.5px;'>{current_status}</span></div></div>"
-        else:
-            # Build stage nodes HTML
-            stages_html = ""
-            for i, stage in enumerate(stages):
-                is_active = i <= current_index
-                is_current = i == current_index
-                bg_color = stage['color'] if is_active else '#1e40af'
-                text_color = '#f9fafb' if is_active else '#64748b'
-                border_color = stage['color'] if is_current else ('#3b82f6' if is_active else '#1e40af')
-                box_shadow = '0 0 0 4px rgba(59, 130, 246, 0.4)' if is_current else 'none'
-                font_weight = '700' if is_current else '600'
-
-                stages_html += f"<div style='display: flex; flex-direction: column; align-items: center; z-index: 3; position: relative;'><div style='width: 1.5rem; height: 1.5rem; border-radius: 50%; background: {bg_color}; border: 3px solid {border_color}; box-shadow: {box_shadow}; transition: all 0.3s ease;'></div><div style='margin-top: 0.5rem; font-size: 0.7rem; font-weight: {font_weight}; color: {text_color}; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;'>{stage['name']}</div></div>"
-
-            progress_html = f"<div style='background: #1e3a8a; padding: 1.25rem; border-radius: 8px; border: 2px solid #3b82f6;'><div style='display: flex; align-items: center; justify-content: space-between; position: relative;'><div style='position: absolute; top: 0.75rem; left: 2rem; right: 2rem; height: 3px; background: #1e40af; z-index: 1;'></div><div style='position: absolute; top: 0.75rem; left: 2rem; width: calc({progress_width}% - 2rem); height: 3px; background: linear-gradient(90deg, #60a5fa, #10b981); z-index: 2;'></div>{stages_html}</div></div>"
-
-        # Hotel requirement badge and dates
-        hotel_required = booking.get('hotel_required', False)
-        hotel_badge = ""
-        hotel_dates_html = ""
-
-        if hotel_required:
-            hotel_badge = "<div style='display: inline-block; background: #f59e0b; color: #ffffff; padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 0.5rem;'>Hotel Required</div>"
-
-            # Format hotel dates if available
-            hotel_checkin = booking.get('hotel_checkin')
-            hotel_checkout = booking.get('hotel_checkout')
-
-            if hotel_checkin and not pd.isna(hotel_checkin):
-                checkin_str = hotel_checkin.strftime('%b %d, %Y')
+    
+    st.markdown(f"""
+        <div style='margin-bottom: 1.5rem;'>
+            <h3 style='color: #f9fafb; font-weight: 600; font-size: 1.125rem;'>{len(filtered_df)} Active Requests</h3>
+            <p style='color: #64748b; font-size: 0.875rem; margin-top: 0.25rem;'>Showing bookings from {date_str}</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    # Add visual separator
+    st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
+    
+    # ========================================
+    # BOOKING CARDS - ENHANCED VERSION
+    # ========================================
+    for idx, booking in filtered_df.iterrows():
+        status_icon = get_status_icon(booking['status'])
+        status_class = get_status_color(booking['status'])
+    
+        tee_time_display = booking.get('tee_time', 'Not Specified')
+        if tee_time_display == 'None' or tee_time_display is None or pd.isna(tee_time_display):
+            tee_time_display = 'Not Specified'
+    
+        note_content = booking.get('note', '')
+        if note_content is None or pd.isna(note_content):
+            note_content = 'No additional information provided'
+    
+        # Prepare progress bar data
+        current_status = booking['status']
+        if current_status == 'Pending':
+            current_status = 'Inquiry'
+    
+        stages = [
+            {'name': 'Inquiry', 'color': '#60a5fa'},
+            {'name': 'Requested', 'color': '#eab308'},
+            {'name': 'Confirmed', 'color': '#22c55e'},
+            {'name': 'Booked', 'color': '#10b981'}
+        ]
+    
+        is_rejected = current_status == 'Rejected'
+        is_cancelled = current_status == 'Cancelled'
+        current_index = next((i for i, s in enumerate(stages) if s['name'] == current_status), 0)
+        progress_width = (current_index / (len(stages) - 1)) * 100 if len(stages) > 1 else 0
+    
+        # Format requested time
+        requested_time = booking['timestamp'].strftime('%b %d • %I:%M %p')
+    
+        with st.container():
+            # Build progress bar HTML inline
+            if is_rejected or is_cancelled:
+                status_color = '#ef4444' if is_rejected else '#64748b'
+                progress_html = f"<div style='background: #1e3a8a; padding: 1rem; border-radius: 8px; border: 2px solid #3b82f6;'><div style='display: flex; align-items: center; justify-content: center; gap: 0.75rem;'><div style='width: 12px; height: 12px; border-radius: 50%; background: {status_color};'></div><span style='color: {status_color}; font-weight: 700; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.5px;'>{current_status}</span></div></div>"
             else:
-                checkin_str = "Not Set"
-
-            if hotel_checkout and not pd.isna(hotel_checkout):
-                checkout_str = hotel_checkout.strftime('%b %d, %Y')
-            else:
-                checkout_str = "Not Set"
-
-            hotel_dates_html = f"<div style='background: #f59e0b; padding: 1rem; border-radius: 8px; margin-top: 1rem;'><div style='color: #ffffff; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;'>Hotel Accommodation</div><div style='display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;'><div><div style='color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Check-In</div><div style='color: #ffffff; font-size: 0.95rem; font-weight: 700;'>{checkin_str}</div></div><div><div style='color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Check-Out</div><div style='color: #ffffff; font-size: 0.95rem; font-weight: 700;'>{checkout_str}</div></div></div></div>"
-
-        # Golf courses and tee times section
-        golf_courses = booking.get('golf_courses', '')
-        selected_tee_times = booking.get('selected_tee_times', '')
-        golf_info_html = ""
-
-        if golf_courses and not pd.isna(golf_courses) and str(golf_courses).strip():
-            courses_list = str(golf_courses).strip()
-            times_list = str(selected_tee_times).strip() if selected_tee_times and not pd.isna(selected_tee_times) else "Times not specified"
-
-            golf_info_html = f"<div style='background: #10b981; padding: 1rem; border-radius: 8px; margin-top: 1rem;'><div style='color: #ffffff; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;'>Golf Courses & Tee Times</div><div style='display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;'><div><div style='color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Courses</div><div style='color: #ffffff; font-size: 0.875rem; font-weight: 600; line-height: 1.5;'>{html.escape(courses_list)}</div></div><div><div style='color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Tee Times</div><div style='color: #ffffff; font-size: 0.875rem; font-weight: 600; line-height: 1.5;'>{html.escape(times_list)}</div></div></div></div>"
-
-        # Build complete card HTML including progress bar and details
-        card_html = f"<div class='booking-card' style='background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border: 2px solid #3b82f6; border-radius: 12px; padding: 1.5rem; margin-bottom: 0.5rem; box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3); transition: all 0.3s ease;'><div style='display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;'><div style='flex: 1;'><div style='display: flex; align-items: center;'><div class='booking-id' style='margin-bottom: 0.5rem;'>{html.escape(str(booking['booking_id']))}</div>{hotel_badge}</div><div class='booking-email'>{html.escape(str(booking['guest_email']))}</div></div><div style='text-align: right;'><div class='timestamp'>REQUESTED</div><div class='timestamp-value'>{requested_time}</div></div></div><div style='margin-bottom: 1.5rem;'>{progress_html}</div><div style='height: 1px; background: linear-gradient(90deg, transparent, #3b82f6, transparent); margin: 1.5rem 0;'></div><div style='display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 1rem;'><div><div class='data-label' style='margin-bottom: 0.5rem;'>TEE DATE</div><div style='font-size: 1rem; font-weight: 600; color: #f9fafb;'>{booking['date'].strftime('%b %d, %Y')}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>TEE TIME</div><div style='font-size: 1rem; font-weight: 600; color: #f9fafb;'>{tee_time_display}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>PLAYERS</div><div style='font-size: 1rem; font-weight: 600; color: #f9fafb;'>{booking['players']}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>TOTAL</div><div style='font-size: 1.5rem; font-weight: 700; color: #10b981;'>${booking['total']:,.2f}</div></div></div>{golf_info_html}{hotel_dates_html}</div>"
-
-        # Render the complete card
-        st.markdown(card_html, unsafe_allow_html=True)
-
-        # Quick status change buttons (above the expander)
-        if not is_rejected and not is_cancelled:
-            st.markdown("<div style='margin: -0.5rem 0 1rem 0;'>", unsafe_allow_html=True)
-            status_col1, status_col2, status_col3, status_col4, status_col5 = st.columns([1, 1, 1, 1, 2])
-
-            with status_col1:
-                if booking['status'] in ['Inquiry', 'Pending']:
-                    if st.button("→ Requested", key=f"quick_req_{booking['booking_id']}", use_container_width=True, help="Move to Requested"):
-                        if update_booking_status(booking['booking_id'], 'Requested', st.session_state.username):
-                            st.cache_data.clear()
-                            st.rerun()
-
-            with status_col2:
-                if booking['status'] == 'Requested':
-                    if st.button("→ Confirmed", key=f"quick_conf_{booking['booking_id']}", use_container_width=True, help="Move to Confirmed"):
-                        if update_booking_status(booking['booking_id'], 'Confirmed', st.session_state.username):
-                            st.cache_data.clear()
-                            st.rerun()
-
-            with status_col3:
-                if booking['status'] == 'Confirmed':
-                    if st.button("→ Booked", key=f"quick_book_{booking['booking_id']}", use_container_width=True, help="Move to Booked"):
-                        if update_booking_status(booking['booking_id'], 'Booked', st.session_state.username):
-                            st.cache_data.clear()
-                            st.rerun()
-
-            with status_col4:
-                if booking['status'] not in ['Rejected', 'Cancelled', 'Booked']:
-                    if st.button("Reject", key=f"quick_rej_{booking['booking_id']}", use_container_width=True, help="Reject this booking"):
-                        if update_booking_status(booking['booking_id'], 'Rejected', st.session_state.username):
-                            st.cache_data.clear()
-                            st.rerun()
-
-            st.markdown("</div>", unsafe_allow_html=True)
-
-        with st.expander("View Full Details", expanded=False):
-            detail_col1, detail_col2 = st.columns([2, 1])
-
-            with detail_col1:
-                st.markdown("""
-                    <div style='background: #4a6278; padding: 0.75rem 1rem; border-radius: 8px 8px 0 0; border: 2px solid #6b7c3f; border-bottom: none; margin-bottom: 0;'>
-                        <div style='color: #d4b896; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;'>Current Notes</div>
-                    </div>
-                """, unsafe_allow_html=True)
-
-                # Editable notes text area
-                updated_note = st.text_area(
-                    label="Notes",
-                    value=note_content,
-                    height=200,
-                    disabled=False,
-                    label_visibility="collapsed",
-                    key=f"note_{booking['booking_id']}"
-                )
-
-                # Save notes button
-                if updated_note != note_content:
-                    if st.button("Save Notes", key=f"save_note_{booking['booking_id']}", use_container_width=True):
-                        if update_booking_note(booking['booking_id'], updated_note):
-                            st.success("Notes saved successfully!")
-                            st.cache_data.clear()
-                            st.rerun()
-                
-                if booking.get('updated_by') and not pd.isna(booking.get('updated_by')):
-                    st.markdown(f"""
-                        <div style='margin-top: 1rem; padding: 0.75rem; background: #3d5266; border-radius: 8px; border: 2px solid #6b7c3f;'>
-                            <div style='color: #d4b896; font-size: 0.7rem; font-weight: 600; text-transform: uppercase;'>Last Updated</div>
-                            <div style='color: #f7f5f2; font-size: 0.875rem; margin-top: 0.25rem;'>{booking['updated_at'].strftime('%b %d, %Y • %I:%M %p')} by {booking['updated_by']}</div>
+                # Build stage nodes HTML
+                stages_html = ""
+                for i, stage in enumerate(stages):
+                    is_active = i <= current_index
+                    is_current = i == current_index
+                    bg_color = stage['color'] if is_active else '#1e40af'
+                    text_color = '#f9fafb' if is_active else '#64748b'
+                    border_color = stage['color'] if is_current else ('#3b82f6' if is_active else '#1e40af')
+                    box_shadow = '0 0 0 4px rgba(59, 130, 246, 0.4)' if is_current else 'none'
+                    font_weight = '700' if is_current else '600'
+    
+                    stages_html += f"<div style='display: flex; flex-direction: column; align-items: center; z-index: 3; position: relative;'><div style='width: 1.5rem; height: 1.5rem; border-radius: 50%; background: {bg_color}; border: 3px solid {border_color}; box-shadow: {box_shadow}; transition: all 0.3s ease;'></div><div style='margin-top: 0.5rem; font-size: 0.7rem; font-weight: {font_weight}; color: {text_color}; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;'>{stage['name']}</div></div>"
+    
+                progress_html = f"<div style='background: #1e3a8a; padding: 1.25rem; border-radius: 8px; border: 2px solid #3b82f6;'><div style='display: flex; align-items: center; justify-content: space-between; position: relative;'><div style='position: absolute; top: 0.75rem; left: 2rem; right: 2rem; height: 3px; background: #1e40af; z-index: 1;'></div><div style='position: absolute; top: 0.75rem; left: 2rem; width: calc({progress_width}% - 2rem); height: 3px; background: linear-gradient(90deg, #60a5fa, #10b981); z-index: 2;'></div>{stages_html}</div></div>"
+    
+            # Hotel requirement badge and dates
+            hotel_required = booking.get('hotel_required', False)
+            hotel_badge = ""
+            hotel_dates_html = ""
+    
+            if hotel_required:
+                hotel_badge = "<div style='display: inline-block; background: #f59e0b; color: #ffffff; padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 0.5rem;'>Hotel Required</div>"
+    
+                # Format hotel dates if available
+                hotel_checkin = booking.get('hotel_checkin')
+                hotel_checkout = booking.get('hotel_checkout')
+    
+                if hotel_checkin and not pd.isna(hotel_checkin):
+                    checkin_str = hotel_checkin.strftime('%b %d, %Y')
+                else:
+                    checkin_str = "Not Set"
+    
+                if hotel_checkout and not pd.isna(hotel_checkout):
+                    checkout_str = hotel_checkout.strftime('%b %d, %Y')
+                else:
+                    checkout_str = "Not Set"
+    
+                hotel_dates_html = f"<div style='background: #f59e0b; padding: 1rem; border-radius: 8px; margin-top: 1rem;'><div style='color: #ffffff; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;'>Hotel Accommodation</div><div style='display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;'><div><div style='color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Check-In</div><div style='color: #ffffff; font-size: 0.95rem; font-weight: 700;'>{checkin_str}</div></div><div><div style='color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Check-Out</div><div style='color: #ffffff; font-size: 0.95rem; font-weight: 700;'>{checkout_str}</div></div></div></div>"
+    
+            # Golf courses and tee times section
+            golf_courses = booking.get('golf_courses', '')
+            selected_tee_times = booking.get('selected_tee_times', '')
+            golf_info_html = ""
+    
+            if golf_courses and not pd.isna(golf_courses) and str(golf_courses).strip():
+                courses_list = str(golf_courses).strip()
+                times_list = str(selected_tee_times).strip() if selected_tee_times and not pd.isna(selected_tee_times) else "Times not specified"
+    
+                golf_info_html = f"<div style='background: #10b981; padding: 1rem; border-radius: 8px; margin-top: 1rem;'><div style='color: #ffffff; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;'>Golf Courses & Tee Times</div><div style='display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;'><div><div style='color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Courses</div><div style='color: #ffffff; font-size: 0.875rem; font-weight: 600; line-height: 1.5;'>{html.escape(courses_list)}</div></div><div><div style='color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Tee Times</div><div style='color: #ffffff; font-size: 0.875rem; font-weight: 600; line-height: 1.5;'>{html.escape(times_list)}</div></div></div></div>"
+    
+            # Build complete card HTML including progress bar and details
+            card_html = f"<div class='booking-card' style='background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border: 2px solid #3b82f6; border-radius: 12px; padding: 1.5rem; margin-bottom: 0.5rem; box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3); transition: all 0.3s ease;'><div style='display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;'><div style='flex: 1;'><div style='display: flex; align-items: center;'><div class='booking-id' style='margin-bottom: 0.5rem;'>{html.escape(str(booking['booking_id']))}</div>{hotel_badge}</div><div class='booking-email'>{html.escape(str(booking['guest_email']))}</div></div><div style='text-align: right;'><div class='timestamp'>REQUESTED</div><div class='timestamp-value'>{requested_time}</div></div></div><div style='margin-bottom: 1.5rem;'>{progress_html}</div><div style='height: 1px; background: linear-gradient(90deg, transparent, #3b82f6, transparent); margin: 1.5rem 0;'></div><div style='display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 1rem;'><div><div class='data-label' style='margin-bottom: 0.5rem;'>TEE DATE</div><div style='font-size: 1rem; font-weight: 600; color: #f9fafb;'>{booking['date'].strftime('%b %d, %Y')}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>TEE TIME</div><div style='font-size: 1rem; font-weight: 600; color: #f9fafb;'>{tee_time_display}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>PLAYERS</div><div style='font-size: 1rem; font-weight: 600; color: #f9fafb;'>{booking['players']}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>TOTAL</div><div style='font-size: 1.5rem; font-weight: 700; color: #10b981;'>${booking['total']:,.2f}</div></div></div>{golf_info_html}{hotel_dates_html}</div>"
+    
+            # Render the complete card
+            st.markdown(card_html, unsafe_allow_html=True)
+    
+            # Quick status change buttons (above the expander)
+            if not is_rejected and not is_cancelled:
+                st.markdown("<div style='margin: -0.5rem 0 1rem 0;'>", unsafe_allow_html=True)
+                status_col1, status_col2, status_col3, status_col4, status_col5 = st.columns([1, 1, 1, 1, 2])
+    
+                with status_col1:
+                    if booking['status'] in ['Inquiry', 'Pending']:
+                        if st.button("→ Requested", key=f"quick_req_{booking['booking_id']}", use_container_width=True, help="Move to Requested"):
+                            if update_booking_status(booking['booking_id'], 'Requested', st.session_state.username):
+                                st.cache_data.clear()
+                                st.rerun()
+    
+                with status_col2:
+                    if booking['status'] == 'Requested':
+                        if st.button("→ Confirmed", key=f"quick_conf_{booking['booking_id']}", use_container_width=True, help="Move to Confirmed"):
+                            if update_booking_status(booking['booking_id'], 'Confirmed', st.session_state.username):
+                                st.cache_data.clear()
+                                st.rerun()
+    
+                with status_col3:
+                    if booking['status'] == 'Confirmed':
+                        if st.button("→ Booked", key=f"quick_book_{booking['booking_id']}", use_container_width=True, help="Move to Booked"):
+                            if update_booking_status(booking['booking_id'], 'Booked', st.session_state.username):
+                                st.cache_data.clear()
+                                st.rerun()
+    
+                with status_col4:
+                    if booking['status'] not in ['Rejected', 'Cancelled', 'Booked']:
+                        if st.button("Reject", key=f"quick_rej_{booking['booking_id']}", use_container_width=True, help="Reject this booking"):
+                            if update_booking_status(booking['booking_id'], 'Rejected', st.session_state.username):
+                                st.cache_data.clear()
+                                st.rerun()
+    
+                st.markdown("</div>", unsafe_allow_html=True)
+    
+            with st.expander("View Full Details", expanded=False):
+                detail_col1, detail_col2 = st.columns([2, 1])
+    
+                with detail_col1:
+                    st.markdown("""
+                        <div style='background: #4a6278; padding: 0.75rem 1rem; border-radius: 8px 8px 0 0; border: 2px solid #6b7c3f; border-bottom: none; margin-bottom: 0;'>
+                            <div style='color: #d4b896; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;'>Current Notes</div>
                         </div>
                     """, unsafe_allow_html=True)
-            
-            with detail_col2:
-                st.markdown("### Quick Actions")
-
-                current_status = booking['status']
-
-                # Status change dropdown - allows navigation to any status
-                st.markdown("<div style='margin-bottom: 1rem;'>", unsafe_allow_html=True)
-                all_statuses = ['Inquiry', 'Requested', 'Confirmed', 'Booked', 'Rejected', 'Cancelled']
-                # Set default to current status
-                current_index = all_statuses.index(current_status) if current_status in all_statuses else 0
-
-                new_status = st.selectbox(
-                    "Change Status To:",
-                    all_statuses,
-                    index=current_index,
-                    key=f"status_select_{booking['booking_id']}"
-                )
-
-                if new_status != current_status:
-                    if st.button("Update Status", key=f"update_status_{booking['booking_id']}", use_container_width=True):
-                        if update_booking_status(booking['booking_id'], new_status, st.session_state.username):
-                            st.success(f"Status updated to {new_status}")
-                            st.cache_data.clear()
-                            st.rerun()
-
-                st.markdown("</div>", unsafe_allow_html=True)
-
-                # Delete booking button (with confirmation)
-                st.markdown("<div style='margin-top: 1.5rem; border-top: 2px solid #6b7c3f; padding-top: 1rem;'></div>", unsafe_allow_html=True)
-                st.markdown("<div style='color: #cc8855; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;'>Danger Zone</div>", unsafe_allow_html=True)
-
-                # Initialize session state for delete confirmation
-                if f"confirm_delete_{booking['booking_id']}" not in st.session_state:
-                    st.session_state[f"confirm_delete_{booking['booking_id']}"] = False
-
-                if not st.session_state[f"confirm_delete_{booking['booking_id']}"]:
-                    if st.button("Delete Booking", key=f"del_{booking['booking_id']}", use_container_width=True, type="secondary"):
-                        st.session_state[f"confirm_delete_{booking['booking_id']}"] = True
-                        st.rerun()
-                else:
-                    st.warning("Are you sure? This action cannot be undone.")
-                    col_confirm1, col_confirm2 = st.columns(2)
-                    with col_confirm1:
-                        if st.button("Yes, Delete", key=f"confirm_del_{booking['booking_id']}", use_container_width=True):
-                            if delete_booking(booking['booking_id']):
-                                st.success("Booking deleted successfully!")
+    
+                    # Editable notes text area
+                    updated_note = st.text_area(
+                        label="Notes",
+                        value=note_content,
+                        height=200,
+                        disabled=False,
+                        label_visibility="collapsed",
+                        key=f"note_{booking['booking_id']}"
+                    )
+    
+                    # Save notes button
+                    if updated_note != note_content:
+                        if st.button("Save Notes", key=f"save_note_{booking['booking_id']}", use_container_width=True):
+                            if update_booking_note(booking['booking_id'], updated_note):
+                                st.success("Notes saved successfully!")
                                 st.cache_data.clear()
+                                st.rerun()
+                    
+                    if booking.get('updated_by') and not pd.isna(booking.get('updated_by')):
+                        st.markdown(f"""
+                            <div style='margin-top: 1rem; padding: 0.75rem; background: #3d5266; border-radius: 8px; border: 2px solid #6b7c3f;'>
+                                <div style='color: #d4b896; font-size: 0.7rem; font-weight: 600; text-transform: uppercase;'>Last Updated</div>
+                                <div style='color: #f7f5f2; font-size: 0.875rem; margin-top: 0.25rem;'>{booking['updated_at'].strftime('%b %d, %Y • %I:%M %p')} by {booking['updated_by']}</div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                
+                with detail_col2:
+                    st.markdown("### Quick Actions")
+    
+                    current_status = booking['status']
+    
+                    # Status change dropdown - allows navigation to any status
+                    st.markdown("<div style='margin-bottom: 1rem;'>", unsafe_allow_html=True)
+                    all_statuses = ['Inquiry', 'Requested', 'Confirmed', 'Booked', 'Rejected', 'Cancelled']
+                    # Set default to current status
+                    current_index = all_statuses.index(current_status) if current_status in all_statuses else 0
+    
+                    new_status = st.selectbox(
+                        "Change Status To:",
+                        all_statuses,
+                        index=current_index,
+                        key=f"status_select_{booking['booking_id']}"
+                    )
+    
+                    if new_status != current_status:
+                        if st.button("Update Status", key=f"update_status_{booking['booking_id']}", use_container_width=True):
+                            if update_booking_status(booking['booking_id'], new_status, st.session_state.username):
+                                st.success(f"Status updated to {new_status}")
+                                st.cache_data.clear()
+                                st.rerun()
+    
+                    st.markdown("</div>", unsafe_allow_html=True)
+    
+                    # Delete booking button (with confirmation)
+                    st.markdown("<div style='margin-top: 1.5rem; border-top: 2px solid #6b7c3f; padding-top: 1rem;'></div>", unsafe_allow_html=True)
+                    st.markdown("<div style='color: #cc8855; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;'>Danger Zone</div>", unsafe_allow_html=True)
+    
+                    # Initialize session state for delete confirmation
+                    if f"confirm_delete_{booking['booking_id']}" not in st.session_state:
+                        st.session_state[f"confirm_delete_{booking['booking_id']}"] = False
+    
+                    if not st.session_state[f"confirm_delete_{booking['booking_id']}"]:
+                        if st.button("Delete Booking", key=f"del_{booking['booking_id']}", use_container_width=True, type="secondary"):
+                            st.session_state[f"confirm_delete_{booking['booking_id']}"] = True
+                            st.rerun()
+                    else:
+                        st.warning("Are you sure? This action cannot be undone.")
+                        col_confirm1, col_confirm2 = st.columns(2)
+                        with col_confirm1:
+                            if st.button("Yes, Delete", key=f"confirm_del_{booking['booking_id']}", use_container_width=True):
+                                if delete_booking(booking['booking_id']):
+                                    st.success("Booking deleted successfully!")
+                                    st.cache_data.clear()
+                                    st.session_state[f"confirm_delete_{booking['booking_id']}"] = False
+                                    st.rerun()
+                        with col_confirm2:
+                            if st.button("Cancel", key=f"cancel_del_{booking['booking_id']}", use_container_width=True):
                                 st.session_state[f"confirm_delete_{booking['booking_id']}"] = False
                                 st.rerun()
-                    with col_confirm2:
-                        if st.button("Cancel", key=f"cancel_del_{booking['booking_id']}", use_container_width=True):
-                            st.session_state[f"confirm_delete_{booking['booking_id']}"] = False
-                            st.rerun()
+    
+    st.markdown("<div style='height: 2px; background: #6b7c3f; margin: 2rem 0;'></div>", unsafe_allow_html=True)
+    st.markdown("#### Export Options")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        if st.button("Export to Excel", use_container_width=True):
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                filtered_df.to_excel(writer, index=False, sheet_name='Bookings')
+    
+            st.download_button(
+                label="Download Excel",
+                data=output.getvalue(),
+                file_name=f"bookings_{datetime.now().strftime('%Y%m%d')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
+    
+    with col2:
+        if st.button("Export to CSV", use_container_width=True):
+            csv = filtered_df.to_csv(index=False)
+            st.download_button(
+                label="Download CSV",
+                data=csv,
+                file_name=f"bookings_{datetime.now().strftime('%Y%m%d')}.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+    
+    with col3:
+        if st.button("Refresh Data", use_container_width=True):
+            st.cache_data.clear()
+            st.rerun()
+    
+    with col4:
+        if st.button("Fix Tee Times", use_container_width=True):
+            with st.spinner("Extracting tee times from email content..."):
+                updated, not_found = fix_all_tee_times(st.session_state.customer_id)
+                if updated > 0:
+                    st.success(f"Updated {updated} booking(s) with extracted tee times!")
+                    st.cache_data.clear()
+                    st.rerun()
+                elif not_found > 0:
+                    st.warning(f"Could not extract tee times from {not_found} booking(s)")
+                else:
+                    st.info("All bookings already have tee times set")
 
-st.markdown("<div style='height: 2px; background: #6b7c3f; margin: 2rem 0;'></div>", unsafe_allow_html=True)
-st.markdown("#### Export Options")
-col1, col2, col3, col4 = st.columns(4)
+# ========================================
+# REPORTS & ANALYTICS VIEW
+# ========================================
+elif page == "Reports & Analytics":
+    st.markdown("""
+        <h2 style='margin-bottom: 0.5rem;'>Reports & Analytics</h2>
+        <p style='color: #93c5fd; margin-bottom: 1.5rem; font-size: 0.9375rem;'>Comprehensive insights into your booking performance</p>
+    """, unsafe_allow_html=True)
 
-with col1:
-    if st.button("Export to Excel", use_container_width=True):
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            filtered_df.to_excel(writer, index=False, sheet_name='Bookings')
+    # Load all bookings for analytics
+    df, source = load_bookings_from_db(st.session_state.customer_id)
 
-        st.download_button(
-            label="Download Excel",
-            data=output.getvalue(),
-            file_name=f"bookings_{datetime.now().strftime('%Y%m%d')}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            use_container_width=True
+    if df.empty:
+        st.info("No booking data available for analytics")
+        st.stop()
+
+    # Date range selector for analytics
+    st.markdown("### Analysis Period")
+    col_range1, col_range2 = st.columns([1, 3])
+
+    with col_range1:
+        analysis_period = st.selectbox(
+            "Period",
+            ["Last 7 Days", "Last 30 Days", "Last 90 Days", "Last 6 Months", "Last Year", "All Time", "Custom"],
+            index=1
         )
 
-with col2:
-    if st.button("Export to CSV", use_container_width=True):
-        csv = filtered_df.to_csv(index=False)
-        st.download_button(
-            label="Download CSV",
-            data=csv,
-            file_name=f"bookings_{datetime.now().strftime('%Y%m%d')}.csv",
-            mime="text/csv",
-            use_container_width=True
-        )
-
-with col3:
-    if st.button("Refresh Data", use_container_width=True):
-        st.cache_data.clear()
-        st.rerun()
-
-with col4:
-    if st.button("Fix Tee Times", use_container_width=True):
-        with st.spinner("Extracting tee times from email content..."):
-            updated, not_found = fix_all_tee_times(st.session_state.customer_id)
-            if updated > 0:
-                st.success(f"Updated {updated} booking(s) with extracted tee times!")
-                st.cache_data.clear()
-                st.rerun()
-            elif not_found > 0:
-                st.warning(f"Could not extract tee times from {not_found} booking(s)")
+    with col_range2:
+        if analysis_period == "Last 7 Days":
+            analysis_start = datetime.now() - timedelta(days=7)
+            analysis_end = datetime.now()
+        elif analysis_period == "Last 30 Days":
+            analysis_start = datetime.now() - timedelta(days=30)
+            analysis_end = datetime.now()
+        elif analysis_period == "Last 90 Days":
+            analysis_start = datetime.now() - timedelta(days=90)
+            analysis_end = datetime.now()
+        elif analysis_period == "Last 6 Months":
+            analysis_start = datetime.now() - timedelta(days=180)
+            analysis_end = datetime.now()
+        elif analysis_period == "Last Year":
+            analysis_start = datetime.now() - timedelta(days=365)
+            analysis_end = datetime.now()
+        elif analysis_period == "All Time":
+            analysis_start = df['timestamp'].min()
+            analysis_end = datetime.now()
+        else:  # Custom
+            custom_range = st.date_input(
+                "Custom Range",
+                value=(datetime.now().date() - timedelta(days=30), datetime.now().date())
+            )
+            if isinstance(custom_range, tuple) and len(custom_range) == 2:
+                analysis_start = pd.to_datetime(custom_range[0])
+                analysis_end = pd.to_datetime(custom_range[1])
             else:
-                st.info("All bookings already have tee times set")
+                analysis_start = datetime.now() - timedelta(days=30)
+                analysis_end = datetime.now()
+
+    # Filter data by analysis period
+    analysis_df = df[
+        (df['timestamp'] >= pd.to_datetime(analysis_start)) &
+        (df['timestamp'] <= pd.to_datetime(analysis_end))
+    ].copy()
+
+    st.markdown("<div style='height: 2px; background: #3b82f6; margin: 1.5rem 0;'></div>", unsafe_allow_html=True)
+
+    # ========================================
+    # KEY METRICS OVERVIEW
+    # ========================================
+    st.markdown("### Key Metrics")
+
+    metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
+
+    with metric_col1:
+        total_bookings = len(analysis_df)
+        st.markdown(f"""
+            <div style='background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); border: 2px solid #3b82f6; border-radius: 12px; padding: 1.5rem; text-align: center;'>
+                <div style='color: #93c5fd; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Total Bookings</div>
+                <div style='color: #f9fafb; font-size: 2.5rem; font-weight: 700;'>{total_bookings}</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with metric_col2:
+        total_revenue = analysis_df['total'].sum()
+        st.markdown(f"""
+            <div style='background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); border: 2px solid #3b82f6; border-radius: 12px; padding: 1.5rem; text-align: center;'>
+                <div style='color: #93c5fd; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Total Revenue</div>
+                <div style='color: #10b981; font-size: 2.5rem; font-weight: 700;'>${total_revenue:,.0f}</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with metric_col3:
+        avg_booking_value = analysis_df['total'].mean() if len(analysis_df) > 0 else 0
+        st.markdown(f"""
+            <div style='background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); border: 2px solid #3b82f6; border-radius: 12px; padding: 1.5rem; text-align: center;'>
+                <div style='color: #93c5fd; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Avg Booking Value</div>
+                <div style='color: #f9fafb; font-size: 2.5rem; font-weight: 700;'>${avg_booking_value:,.0f}</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with metric_col4:
+        total_players = analysis_df['players'].sum()
+        st.markdown(f"""
+            <div style='background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); border: 2px solid #3b82f6; border-radius: 12px; padding: 1.5rem; text-align: center;'>
+                <div style='color: #93c5fd; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Total Players</div>
+                <div style='color: #f9fafb; font-size: 2.5rem; font-weight: 700;'>{int(total_players)}</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<div style='height: 2px; background: #3b82f6; margin: 2rem 0;'></div>", unsafe_allow_html=True)
+
+    # ========================================
+    # BOOKING STATUS DISTRIBUTION
+    # ========================================
+    col_charts1, col_charts2 = st.columns(2)
+
+    with col_charts1:
+        st.markdown("### Booking Status Distribution")
+        status_counts = analysis_df['status'].value_counts()
+
+        status_data = []
+        for status, count in status_counts.items():
+            percentage = (count / len(analysis_df)) * 100
+            status_data.append({
+                'Status': status,
+                'Count': count,
+                'Percentage': percentage
+            })
+
+        status_summary_df = pd.DataFrame(status_data)
+
+        # Display as a styled table
+        for _, row in status_summary_df.iterrows():
+            bar_width = row['Percentage']
+            st.markdown(f"""
+                <div style='background: #2563eb; border: 2px solid #3b82f6; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;'>
+                    <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;'>
+                        <div style='color: #f9fafb; font-weight: 600; font-size: 1rem;'>{row['Status']}</div>
+                        <div style='color: #93c5fd; font-weight: 700; font-size: 1.125rem;'>{int(row['Count'])}</div>
+                    </div>
+                    <div style='background: #1e3a8a; border-radius: 4px; height: 8px; overflow: hidden;'>
+                        <div style='background: linear-gradient(90deg, #3b82f6, #10b981); height: 100%; width: {bar_width}%;'></div>
+                    </div>
+                    <div style='color: #64748b; font-size: 0.75rem; margin-top: 0.25rem;'>{row['Percentage']:.1f}% of total</div>
+                </div>
+            """, unsafe_allow_html=True)
+
+    with col_charts2:
+        st.markdown("### Revenue by Status")
+        revenue_by_status = analysis_df.groupby('status')['total'].sum().sort_values(ascending=False)
+
+        total_rev = revenue_by_status.sum()
+
+        for status, revenue in revenue_by_status.items():
+            percentage = (revenue / total_rev) * 100 if total_rev > 0 else 0
+            bar_width = percentage
+
+            st.markdown(f"""
+                <div style='background: #2563eb; border: 2px solid #3b82f6; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;'>
+                    <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;'>
+                        <div style='color: #f9fafb; font-weight: 600; font-size: 1rem;'>{status}</div>
+                        <div style='color: #10b981; font-weight: 700; font-size: 1.125rem;'>${revenue:,.0f}</div>
+                    </div>
+                    <div style='background: #1e3a8a; border-radius: 4px; height: 8px; overflow: hidden;'>
+                        <div style='background: linear-gradient(90deg, #10b981, #3b82f6); height: 100%; width: {bar_width}%;'></div>
+                    </div>
+                    <div style='color: #64748b; font-size: 0.75rem; margin-top: 0.25rem;'>{percentage:.1f}% of revenue</div>
+                </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown("<div style='height: 2px; background: #3b82f6; margin: 2rem 0;'></div>", unsafe_allow_html=True)
+
+    # ========================================
+    # BOOKING TRENDS OVER TIME
+    # ========================================
+    st.markdown("### Booking Trends Over Time")
+
+    # Group by date
+    analysis_df['booking_date'] = analysis_df['timestamp'].dt.date
+    daily_bookings = analysis_df.groupby('booking_date').agg({
+        'booking_id': 'count',
+        'total': 'sum',
+        'players': 'sum'
+    }).reset_index()
+    daily_bookings.columns = ['Date', 'Bookings', 'Revenue', 'Players']
+
+    # Create simple line chart display
+    st.markdown("#### Daily Booking Volume")
+
+    if len(daily_bookings) > 0:
+        max_bookings = daily_bookings['Bookings'].max()
+
+        for _, row in daily_bookings.tail(30).iterrows():  # Show last 30 days
+            bar_width = (row['Bookings'] / max_bookings) * 100 if max_bookings > 0 else 0
+
+            st.markdown(f"""
+                <div style='display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;'>
+                    <div style='color: #93c5fd; font-weight: 600; min-width: 100px; font-size: 0.875rem;'>{row['Date']}</div>
+                    <div style='flex: 1; background: #2563eb; border-radius: 4px; height: 24px; overflow: hidden; border: 1px solid #3b82f6;'>
+                        <div style='background: linear-gradient(90deg, #3b82f6, #10b981); height: 100%; width: {bar_width}%; display: flex; align-items: center; padding-left: 0.5rem;'>
+                            <span style='color: #f9fafb; font-weight: 600; font-size: 0.75rem;'>{int(row['Bookings'])}</span>
+                        </div>
+                    </div>
+                    <div style='color: #10b981; font-weight: 700; min-width: 80px; text-align: right; font-size: 0.875rem;'>${row['Revenue']:,.0f}</div>
+                </div>
+            """, unsafe_allow_html=True)
+
+    else:
+        st.info("No booking trend data available")
+
+    st.markdown("<div style='height: 2px; background: #3b82f6; margin: 2rem 0;'></div>", unsafe_allow_html=True)
+
+    # ========================================
+    # CONVERSION FUNNEL
+    # ========================================
+    st.markdown("### Booking Conversion Funnel")
+
+    funnel_stages = [
+        ('Inquiry', len(analysis_df[analysis_df['status'].isin(['Inquiry', 'Pending'])])),
+        ('Requested', len(analysis_df[analysis_df['status'] == 'Requested'])),
+        ('Confirmed', len(analysis_df[analysis_df['status'] == 'Confirmed'])),
+        ('Booked', len(analysis_df[analysis_df['status'] == 'Booked']))
+    ]
+
+    total_funnel = sum([count for _, count in funnel_stages])
+
+    if total_funnel > 0:
+        for i, (stage, count) in enumerate(funnel_stages):
+            percentage = (count / total_funnel) * 100
+            bar_width = percentage
+
+            # Calculate conversion from previous stage
+            if i > 0:
+                prev_count = funnel_stages[i-1][1]
+                conversion = (count / prev_count) * 100 if prev_count > 0 else 0
+                conversion_text = f"<div style='color: #64748b; font-size: 0.75rem; margin-top: 0.25rem;'>Conversion: {conversion:.1f}% from previous stage</div>"
+            else:
+                conversion_text = ""
+
+            st.markdown(f"""
+                <div style='background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); border: 2px solid #3b82f6; border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem;'>
+                    <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;'>
+                        <div style='color: #f9fafb; font-weight: 700; font-size: 1.25rem;'>{stage}</div>
+                        <div style='color: #93c5fd; font-weight: 700; font-size: 1.5rem;'>{count}</div>
+                    </div>
+                    <div style='background: #1e3a8a; border-radius: 6px; height: 12px; overflow: hidden;'>
+                        <div style='background: linear-gradient(90deg, #3b82f6, #10b981); height: 100%; width: {bar_width}%;'></div>
+                    </div>
+                    <div style='color: #64748b; font-size: 0.75rem; margin-top: 0.5rem;'>{percentage:.1f}% of total funnel volume</div>
+                    {conversion_text}
+                </div>
+            """, unsafe_allow_html=True)
+
+        # Overall conversion rate
+        booked_count = funnel_stages[-1][1]
+        inquiry_count = funnel_stages[0][1]
+        overall_conversion = (booked_count / inquiry_count) * 100 if inquiry_count > 0 else 0
+
+        st.markdown(f"""
+            <div style='background: #3a5a40; border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center; margin-top: 1.5rem;'>
+                <div style='color: #ffffff; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Overall Conversion Rate</div>
+                <div style='color: #10b981; font-size: 3rem; font-weight: 700;'>{overall_conversion:.1f}%</div>
+                <div style='color: rgba(255,255,255,0.8); font-size: 0.875rem; margin-top: 0.5rem;'>From Inquiry to Booked</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    else:
+        st.info("No funnel data available for this period")
+
+    st.markdown("<div style='height: 2px; background: #3b82f6; margin: 2rem 0;'></div>", unsafe_allow_html=True)
+
+    # ========================================
+    # PEAK BOOKING TIMES
+    # ========================================
+    st.markdown("### Peak Booking Times")
+
+    col_peak1, col_peak2 = st.columns(2)
+
+    with col_peak1:
+        st.markdown("#### Most Popular Tee Times")
+        tee_time_popularity = analysis_df[analysis_df['tee_time'].notna()].groupby('tee_time').size().sort_values(ascending=False).head(10)
+
+        if len(tee_time_popularity) > 0:
+            max_pop = tee_time_popularity.max()
+
+            for tee_time, count in tee_time_popularity.items():
+                bar_width = (count / max_pop) * 100 if max_pop > 0 else 0
+
+                st.markdown(f"""
+                    <div style='background: #2563eb; border: 1px solid #3b82f6; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.5rem;'>
+                        <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;'>
+                            <div style='color: #f9fafb; font-weight: 600;'>{tee_time}</div>
+                            <div style='color: #93c5fd; font-weight: 700;'>{int(count)} bookings</div>
+                        </div>
+                        <div style='background: #1e3a8a; border-radius: 3px; height: 6px; overflow: hidden;'>
+                            <div style='background: #3b82f6; height: 100%; width: {bar_width}%;'></div>
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.info("No tee time data available")
+
+    with col_peak2:
+        st.markdown("#### Busiest Days of Week")
+        analysis_df['day_of_week'] = pd.to_datetime(analysis_df['date']).dt.day_name()
+        day_popularity = analysis_df.groupby('day_of_week').size().reindex(
+            ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+            fill_value=0
+        )
+
+        if day_popularity.sum() > 0:
+            max_day = day_popularity.max()
+
+            for day, count in day_popularity.items():
+                bar_width = (count / max_day) * 100 if max_day > 0 else 0
+
+                st.markdown(f"""
+                    <div style='background: #2563eb; border: 1px solid #3b82f6; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.5rem;'>
+                        <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;'>
+                            <div style='color: #f9fafb; font-weight: 600;'>{day}</div>
+                            <div style='color: #93c5fd; font-weight: 700;'>{int(count)} bookings</div>
+                        </div>
+                        <div style='background: #1e3a8a; border-radius: 3px; height: 6px; overflow: hidden;'>
+                            <div style='background: #10b981; height: 100%; width: {bar_width}%;'></div>
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.info("No day of week data available")
+
+    st.markdown("<div style='height: 2px; background: #3b82f6; margin: 2rem 0;'></div>", unsafe_allow_html=True)
+
+    # ========================================
+    # EXPORT ANALYTICS
+    # ========================================
+    st.markdown("### Export Analytics Data")
+
+    export_col1, export_col2, export_col3 = st.columns(3)
+
+    with export_col1:
+        if st.button("Export Full Report (Excel)", use_container_width=True):
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                # Summary sheet
+                summary_data = {
+                    'Metric': ['Total Bookings', 'Total Revenue', 'Avg Booking Value', 'Total Players'],
+                    'Value': [total_bookings, f"${total_revenue:,.2f}", f"${avg_booking_value:,.2f}", int(total_players)]
+                }
+                pd.DataFrame(summary_data).to_excel(writer, index=False, sheet_name='Summary')
+
+                # Status distribution
+                status_summary_df.to_excel(writer, index=False, sheet_name='Status Distribution')
+
+                # Daily trends
+                daily_bookings.to_excel(writer, index=False, sheet_name='Daily Trends')
+
+                # Raw data
+                analysis_df.to_excel(writer, index=False, sheet_name='Raw Data')
+
+            st.download_button(
+                label="Download Analytics Report",
+                data=output.getvalue(),
+                file_name=f"analytics_report_{datetime.now().strftime('%Y%m%d')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
+
+    with export_col2:
+        if st.button("Export Summary (CSV)", use_container_width=True):
+            summary_csv = analysis_df.to_csv(index=False)
+            st.download_button(
+                label="Download CSV",
+                data=summary_csv,
+                file_name=f"analytics_summary_{datetime.now().strftime('%Y%m%d')}.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+
+    with export_col3:
+        if st.button("Refresh Analytics", use_container_width=True):
+            st.cache_data.clear()
+            st.rerun()
