@@ -1170,7 +1170,10 @@ def create_waitlist_table_if_not_exists():
                 notification_sent_at TIMESTAMP,
                 created_at TIMESTAMP DEFAULT NOW(),
                 updated_at TIMESTAMP DEFAULT NOW(),
-                club VARCHAR(100) NOT NULL
+                club VARCHAR(100) NOT NULL,
+                source VARCHAR(50) DEFAULT 'manual',
+                opt_in_confirmed BOOLEAN DEFAULT FALSE,
+                original_booking_request TEXT
             );
         """)
         conn.commit()
@@ -2676,11 +2679,22 @@ elif page == "Waitlist":
             requested_date = entry['requested_date'].strftime('%b %d, %Y') if pd.notna(entry['requested_date']) else 'N/A'
             created_at = entry['created_at'].strftime('%b %d, %Y %I:%M %p') if pd.notna(entry['created_at']) else 'N/A'
 
+            # Determine source badge
+            source = entry.get('source', 'manual')
+            if source == 'email_bot':
+                source_badge = "<span style='background: #8b5cf6; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.65rem; font-weight: 600; margin-left: 0.5rem;'>EMAIL OPT-IN</span>"
+            else:
+                source_badge = "<span style='background: #64748b; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.65rem; font-weight: 600; margin-left: 0.5rem;'>MANUAL</span>"
+
+            # Opt-in confirmed badge
+            opt_in = entry.get('opt_in_confirmed', False)
+            opt_in_badge = "<span style='background: #10b981; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.65rem; font-weight: 600; margin-left: 0.5rem;'>CONFIRMED</span>" if opt_in else ""
+
             st.markdown(f"""
                 <div style='background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border: 2px solid #3b82f6; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem;'>
                     <div style='display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;'>
                         <div>
-                            <div style='color: #f9fafb; font-weight: 700; font-size: 1rem;'>{entry['waitlist_id']}</div>
+                            <div style='color: #f9fafb; font-weight: 700; font-size: 1rem;'>{entry['waitlist_id']}{source_badge}{opt_in_badge}</div>
                             <div style='color: #93c5fd; font-size: 0.875rem;'>{entry['guest_email']}</div>
                             {f"<div style='color: #64748b; font-size: 0.75rem;'>{entry['guest_name']}</div>" if entry.get('guest_name') else ''}
                         </div>
@@ -2707,7 +2721,7 @@ elif page == "Waitlist":
                         </div>
                     </div>
                     <div style='margin-top: 0.75rem; color: #64748b; font-size: 0.75rem;'>
-                        Added: {created_at} | Flexibility: {entry.get('time_flexibility', 'Flexible')}
+                        Added: {created_at} | Flexibility: {entry.get('time_flexibility', 'Flexible')} | Golf Course: {entry.get('golf_course', 'Not specified')}
                     </div>
                 </div>
             """, unsafe_allow_html=True)
