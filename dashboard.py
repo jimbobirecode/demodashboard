@@ -1540,7 +1540,7 @@ with st.sidebar:
     # TeeMail Demo logo
     st.markdown("""
         <div style='display: flex; justify-content: center; align-items: center; padding: 1rem 0.5rem; margin-bottom: 1rem;'>
-            <img src='https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/file.svg' width='180' style='display: block;'/>
+            <img src='https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/output-onlinepngtools.png' width='180' style='display: block;'/>
         </div>
     """, unsafe_allow_html=True)
     st.markdown("""
