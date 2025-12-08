@@ -10,6 +10,8 @@ import html
 import re
 import json
 import requests
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 # ========================================
 # DATABASE CONNECTION
@@ -159,6 +161,386 @@ def extract_tee_time_from_note(note_content):
             return tee_time.upper()
 
     return None
+
+
+# ============================================================================
+# EMAIL AUTOMATION - Configuration and Helper Functions
+# ============================================================================
+
+class EmailConfig:
+    """Email automation configuration"""
+    SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
+    FROM_EMAIL = os.environ.get('FROM_EMAIL')
+    FROM_NAME = os.environ.get('FROM_NAME', 'TeeMail Demo')
+    TEMPLATE_PRE_ARRIVAL = os.environ.get('SENDGRID_TEMPLATE_PRE_ARRIVAL')
+    TEMPLATE_POST_PLAY = os.environ.get('SENDGRID_TEMPLATE_POST_PLAY')
+    PRE_ARRIVAL_DAYS = 3
+    POST_PLAY_DAYS = 2
+
+
+def extract_tee_time_from_selected_tee_times(selected_tee_times):
+    """Extract tee time from selected_tee_times field"""
+    if not selected_tee_times:
+        return None
+
+    if isinstance(selected_tee_times, dict):
+        return selected_tee_times.get('time')
+
+    if isinstance(selected_tee_times, str):
+        try:
+            data = json.loads(selected_tee_times)
+            if isinstance(data, dict) and 'time' in data:
+                return data['time']
+        except (json.JSONDecodeError, ValueError):
+            pass
+
+        map_time_match = re.search(r'time:(\d{1,2}:\d{2}\s*[AaPp][Mm])', selected_tee_times)
+        if map_time_match:
+            return map_time_match.group(1).strip()
+
+        if re.match(r'\d{1,2}:\d{2}\s*[AaPp][Mm]', selected_tee_times):
+            return selected_tee_times
+
+    return None
+
+
+def get_tee_time_from_booking(booking):
+    """Get tee time from booking, trying multiple sources"""
+    if booking.get('tee_time'):
+        return booking['tee_time']
+
+    if booking.get('selected_tee_times'):
+        extracted = extract_tee_time_from_selected_tee_times(booking['selected_tee_times'])
+        if extracted:
+            return extracted
+
+    if booking.get('note'):
+        extracted = extract_tee_time_from_note(booking['note'])
+        if extracted:
+            return extracted
+
+    return 'TBD'
+
+
+def get_upcoming_bookings_for_email(days_ahead=None, club_filter=None):
+    """Get bookings that need pre-arrival emails"""
+    if days_ahead is None:
+        days_ahead = EmailConfig.PRE_ARRIVAL_DAYS
+
+    target_date = (datetime.now() + timedelta(days=days_ahead)).date()
+
+    conn = get_db_connection()
+    cursor = conn.cursor(row_factory=dict_row)
+
+    where_conditions = ["status = 'Confirmed'", "date = %s"]
+    params = [target_date]
+
+    if club_filter:
+        where_conditions.append("club = %s")
+        params.append(club_filter)
+
+    where_clause = " AND ".join(where_conditions)
+
+    cursor.execute("""
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_name = 'bookings'
+        AND column_name = 'pre_arrival_email_sent_at'
+    """)
+    has_tracking = cursor.fetchone() is not None
+
+    query = f"""
+        SELECT
+            id,
+            booking_id,
+            guest_email,
+            guest_name,
+            date as play_date,
+            tee_time,
+            selected_tee_times,
+            note,
+            players,
+            total,
+            golf_courses,
+            hotel_required,
+            hotel_checkin,
+            hotel_checkout,
+            {('pre_arrival_email_sent_at' if has_tracking else 'NULL as pre_arrival_email_sent_at')}
+        FROM bookings
+        WHERE {where_clause}
+        ORDER BY date, tee_time
+    """
+
+    cursor.execute(query, params)
+    bookings = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    if has_tracking:
+        bookings = [b for b in bookings if not b.get('pre_arrival_email_sent_at')]
+
+    return bookings
+
+
+def get_recent_bookings_for_email(days_ago=None, club_filter=None):
+    """Get bookings that need post-play emails"""
+    if days_ago is None:
+        days_ago = EmailConfig.POST_PLAY_DAYS
+
+    target_date = (datetime.now() - timedelta(days=days_ago)).date()
+
+    conn = get_db_connection()
+    cursor = conn.cursor(row_factory=dict_row)
+
+    where_conditions = ["status = 'Confirmed'", "date = %s"]
+    params = [target_date]
+
+    if club_filter:
+        where_conditions.append("club = %s")
+        params.append(club_filter)
+
+    where_clause = " AND ".join(where_conditions)
+
+    cursor.execute("""
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_name = 'bookings'
+        AND column_name = 'post_play_email_sent_at'
+    """)
+    has_tracking = cursor.fetchone() is not None
+
+    query = f"""
+        SELECT
+            id,
+            booking_id,
+            guest_email,
+            guest_name,
+            date as play_date,
+            tee_time,
+            selected_tee_times,
+            note,
+            players,
+            total,
+            golf_courses,
+            {('post_play_email_sent_at' if has_tracking else 'NULL as post_play_email_sent_at')}
+        FROM bookings
+        WHERE {where_clause}
+        ORDER BY date DESC
+    """
+
+    cursor.execute(query, params)
+    bookings = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    if has_tracking:
+        bookings = [b for b in bookings if not b.get('post_play_email_sent_at')]
+
+    return bookings
+
+
+def mark_email_sent(booking_id, email_type):
+    """Mark email as sent in database"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    column_map = {
+        'pre_arrival': 'pre_arrival_email_sent_at',
+        'post_play': 'post_play_email_sent_at'
+    }
+
+    column = column_map.get(email_type)
+    if not column:
+        return
+
+    cursor.execute(f"""
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_name = 'bookings'
+        AND column_name = %s
+    """, (column,))
+
+    if cursor.fetchone():
+        cursor.execute(f"""
+            UPDATE bookings
+            SET {column} = CURRENT_TIMESTAMP
+            WHERE booking_id = %s
+        """, (booking_id,))
+        conn.commit()
+
+    cursor.close()
+    conn.close()
+
+
+def send_pre_arrival_email(booking):
+    """Send pre-arrival welcome email"""
+    try:
+        if not EmailConfig.SENDGRID_API_KEY or not EmailConfig.FROM_EMAIL or not EmailConfig.TEMPLATE_PRE_ARRIVAL:
+            return False, "SendGrid not configured"
+
+        if not booking.get('booking_id') or not booking.get('guest_email') or not booking.get('play_date'):
+            return False, "Missing required booking fields"
+
+        guest_name = booking.get('guest_name') or booking['guest_email'].split('@')[0].title()
+
+        play_date = booking['play_date']
+        if hasattr(play_date, 'strftime'):
+            formatted_date = play_date.strftime('%A, %B %d, %Y')
+        else:
+            formatted_date = str(play_date)
+
+        tee_time_value = get_tee_time_from_booking(booking)
+
+        dynamic_data = {
+            'guest_name': guest_name,
+            'booking_date': formatted_date,
+            'course_name': booking.get('golf_courses') or 'Golf Resort',
+            'tee_time': tee_time_value,
+            'player_count': str(booking.get('players', 0)),
+            'booking_reference': booking['booking_id'],
+            'current_year': str(datetime.now().year),
+            'total': f"${booking.get('total', 0):.2f}" if booking.get('total') else '$0.00',
+        }
+
+        message = Mail(
+            from_email=(EmailConfig.FROM_EMAIL, EmailConfig.FROM_NAME),
+            to_emails=booking['guest_email']
+        )
+        message.template_id = EmailConfig.TEMPLATE_PRE_ARRIVAL
+        message.dynamic_template_data = dynamic_data
+
+        sg = SendGridAPIClient(EmailConfig.SENDGRID_API_KEY)
+        response = sg.send(message)
+
+        if response.status_code in [200, 202]:
+            mark_email_sent(booking['booking_id'], 'pre_arrival')
+            return True, f"Pre-arrival email sent to {booking['guest_email']}"
+        else:
+            return False, f"SendGrid error: {response.status_code}"
+
+    except Exception as e:
+        return False, f"Error: {str(e)}"
+
+
+def send_post_play_email(booking):
+    """Send post-play thank you email"""
+    try:
+        if not EmailConfig.SENDGRID_API_KEY or not EmailConfig.FROM_EMAIL or not EmailConfig.TEMPLATE_POST_PLAY:
+            return False, "SendGrid not configured"
+
+        if not booking.get('booking_id') or not booking.get('guest_email') or not booking.get('play_date'):
+            return False, "Missing required booking fields"
+
+        guest_name = booking.get('guest_name') or booking['guest_email'].split('@')[0].title()
+
+        play_date = booking['play_date']
+        if hasattr(play_date, 'strftime'):
+            formatted_date = play_date.strftime('%A, %B %d, %Y')
+        else:
+            formatted_date = str(play_date)
+
+        tee_time_value = get_tee_time_from_booking(booking)
+
+        dynamic_data = {
+            'guest_name': guest_name,
+            'booking_date': formatted_date,
+            'course_name': booking.get('golf_courses') or 'Golf Resort',
+            'tee_time': tee_time_value,
+            'player_count': str(booking.get('players', 0)),
+            'booking_reference': booking['booking_id'],
+            'current_year': str(datetime.now().year),
+            'total': f"${booking.get('total', 0):.2f}" if booking.get('total') else '$0.00',
+        }
+
+        message = Mail(
+            from_email=(EmailConfig.FROM_EMAIL, EmailConfig.FROM_NAME),
+            to_emails=booking['guest_email']
+        )
+        message.template_id = EmailConfig.TEMPLATE_POST_PLAY
+        message.dynamic_template_data = dynamic_data
+
+        sg = SendGridAPIClient(EmailConfig.SENDGRID_API_KEY)
+        response = sg.send(message)
+
+        if response.status_code in [200, 202]:
+            mark_email_sent(booking['booking_id'], 'post_play')
+            return True, f"Post-play email sent to {booking['guest_email']}"
+        else:
+            return False, f"SendGrid error: {response.status_code}"
+
+    except Exception as e:
+        return False, f"Error: {str(e)}"
+
+
+def process_pre_arrival_emails(club_filter=None, dry_run=False):
+    """Process all pending pre-arrival emails"""
+    bookings = get_upcoming_bookings_for_email(club_filter=club_filter)
+
+    sent_count = 0
+    failed_count = 0
+    results = []
+
+    for booking in bookings:
+        if dry_run:
+            results.append({
+                'booking_id': booking['booking_id'],
+                'email': booking['guest_email'],
+                'status': 'would_send',
+                'message': 'Dry run - email not sent'
+            })
+            continue
+
+        success, message = send_pre_arrival_email(booking)
+
+        if success:
+            sent_count += 1
+        else:
+            failed_count += 1
+
+        results.append({
+            'booking_id': booking['booking_id'],
+            'email': booking['guest_email'],
+            'status': 'sent' if success else 'failed',
+            'message': message
+        })
+
+    return sent_count, failed_count, results
+
+
+def process_post_play_emails(club_filter=None, dry_run=False):
+    """Process all pending post-play emails"""
+    bookings = get_recent_bookings_for_email(club_filter=club_filter)
+
+    sent_count = 0
+    failed_count = 0
+    results = []
+
+    for booking in bookings:
+        if dry_run:
+            results.append({
+                'booking_id': booking['booking_id'],
+                'email': booking['guest_email'],
+                'status': 'would_send',
+                'message': 'Dry run - email not sent'
+            })
+            continue
+
+        success, message = send_post_play_email(booking)
+
+        if success:
+            sent_count += 1
+        else:
+            failed_count += 1
+
+        results.append({
+            'booking_id': booking['booking_id'],
+            'email': booking['guest_email'],
+            'status': 'sent' if success else 'failed',
+            'message': message
+        })
+
+    return sent_count, failed_count, results
+
 
 def hash_password(password: str) -> str:
     """Hash password using bcrypt"""
@@ -1572,7 +1954,7 @@ with st.sidebar:
     if 'current_page' not in st.session_state:
         st.session_state.current_page = "Bookings"
 
-    nav_options = ["Bookings", "Waitlist", "Reports & Analytics", "Marketing Segmentation", "Notify Integration"]
+    nav_options = ["Bookings", "Waitlist", "Reports & Analytics", "Marketing Segmentation", "Email Automation", "Notify Integration"]
     current_index = nav_options.index(st.session_state.current_page) if st.session_state.current_page in nav_options else 0
 
     page = st.radio(
@@ -2997,6 +3379,217 @@ elif page == "Marketing Segmentation":
                 mime="text/csv",
                 use_container_width=True
             )
+
+
+# ========================================
+# EMAIL AUTOMATION VIEW
+# ========================================
+elif page == "Email Automation":
+    st.markdown("""
+        <h2 style='margin-bottom: 0.5rem;'>Customer Journey Email Automation</h2>
+        <p style='color: #ffffff; margin-bottom: 1.5rem; font-size: 0.9375rem;'>Automated pre-arrival and post-play email campaigns</p>
+    """, unsafe_allow_html=True)
+
+    # Configuration check
+    config_status = []
+    if EmailConfig.SENDGRID_API_KEY:
+        config_status.append("SendGrid API Key")
+    if EmailConfig.FROM_EMAIL:
+        config_status.append("From Email")
+    if EmailConfig.TEMPLATE_PRE_ARRIVAL:
+        config_status.append("Pre-Arrival Template")
+    if EmailConfig.TEMPLATE_POST_PLAY:
+        config_status.append("Post-Play Template")
+
+    if len(config_status) == 4:
+        st.success(f"Email automation is configured and ready to use")
+    else:
+        st.warning(f"Email configuration incomplete. Set environment variables: SENDGRID_API_KEY, FROM_EMAIL, SENDGRID_TEMPLATE_PRE_ARRIVAL, SENDGRID_TEMPLATE_POST_PLAY")
+
+    st.markdown("<div style='height: 2px; background: #3b82f6; margin: 2rem 0;'></div>", unsafe_allow_html=True)
+
+    # Campaign overview
+    st.markdown("### Campaign Overview")
+
+    col_campaign1, col_campaign2 = st.columns(2)
+
+    with col_campaign1:
+        st.markdown("""
+            <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem;'>
+                <div style='color: #ffffff; font-weight: 700; font-size: 1.125rem; margin-bottom: 0.5rem;'>Pre-Arrival Campaign</div>
+                <div style='color: #ffffff; font-size: 0.875rem; margin-bottom: 1rem;'>Welcome emails sent 3 days before play date</div>
+                <div style='color: #fbbf24; font-weight: 600;'>Timing: 3 days before play</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with col_campaign2:
+        st.markdown("""
+            <div style='background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); border: 2px solid #3b82f6; border-radius: 12px; padding: 1.5rem;'>
+                <div style='color: #ffffff; font-weight: 700; font-size: 1.125rem; margin-bottom: 0.5rem;'>Post-Play Campaign</div>
+                <div style='color: #ffffff; font-size: 0.875rem; margin-bottom: 1rem;'>Thank you emails sent 2 days after play</div>
+                <div style='color: #fbbf24; font-weight: 600;'>Timing: 2 days after play</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<div style='height: 2px; background: #3b82f6; margin: 2rem 0;'></div>", unsafe_allow_html=True)
+
+    # Campaign tabs
+    tab1, tab2, tab3 = st.tabs(["Pre-Arrival Emails", "Post-Play Emails", "Campaign Settings"])
+
+    with tab1:
+        st.markdown("### Pre-Arrival Email Campaign")
+        st.markdown("<p style='color: #ffffff; margin-bottom: 1rem;'>Send welcome emails to customers 3 days before their tee time</p>", unsafe_allow_html=True)
+
+        # Show pending emails
+        pre_arrival_bookings = get_upcoming_bookings_for_email(club_filter=st.session_state.customer_id)
+
+        st.markdown(f"**{len(pre_arrival_bookings)} bookings** ready for pre-arrival emails")
+
+        if len(pre_arrival_bookings) > 0:
+            with st.expander("View Pending Pre-Arrival Emails", expanded=True):
+                preview_df = pd.DataFrame([{
+                    'Booking ID': b['booking_id'],
+                    'Guest Email': b['guest_email'],
+                    'Guest Name': b.get('guest_name', 'N/A'),
+                    'Play Date': b['play_date'],
+                    'Tee Time': get_tee_time_from_booking(b),
+                    'Course': b.get('golf_courses', 'N/A')
+                } for b in pre_arrival_bookings[:10]])
+                st.dataframe(preview_df, use_container_width=True)
+
+                if len(pre_arrival_bookings) > 10:
+                    st.info(f"Showing first 10 of {len(pre_arrival_bookings)} bookings")
+
+        st.markdown("<div style='height: 1px; background: #3b82f6; margin: 1.5rem 0;'></div>", unsafe_allow_html=True)
+
+        col_pre1, col_pre2 = st.columns(2)
+
+        with col_pre1:
+            if st.button("Dry Run (Preview Only)", use_container_width=True, key="pre_arrival_dry"):
+                with st.spinner("Running preview..."):
+                    sent, failed, results = process_pre_arrival_emails(club_filter=st.session_state.customer_id, dry_run=True)
+                    st.success(f"Preview complete: {len(results)} emails would be sent")
+
+                    if results:
+                        results_df = pd.DataFrame(results)
+                        st.dataframe(results_df, use_container_width=True)
+
+        with col_pre2:
+            if st.button("Send Pre-Arrival Emails", use_container_width=True, key="pre_arrival_send", type="primary"):
+                if len(config_status) < 4:
+                    st.error("Email configuration incomplete. Please set all required environment variables.")
+                else:
+                    with st.spinner("Sending pre-arrival emails..."):
+                        sent, failed, results = process_pre_arrival_emails(club_filter=st.session_state.customer_id, dry_run=False)
+
+                        if sent > 0:
+                            st.success(f"Successfully sent {sent} pre-arrival emails")
+                        if failed > 0:
+                            st.error(f"Failed to send {failed} emails")
+
+                        if results:
+                            results_df = pd.DataFrame(results)
+                            st.dataframe(results_df, use_container_width=True)
+
+    with tab2:
+        st.markdown("### Post-Play Email Campaign")
+        st.markdown("<p style='color: #ffffff; margin-bottom: 1rem;'>Send thank you emails to customers 2 days after their play date</p>", unsafe_allow_html=True)
+
+        # Show pending emails
+        post_play_bookings = get_recent_bookings_for_email(club_filter=st.session_state.customer_id)
+
+        st.markdown(f"**{len(post_play_bookings)} bookings** ready for post-play emails")
+
+        if len(post_play_bookings) > 0:
+            with st.expander("View Pending Post-Play Emails", expanded=True):
+                preview_df = pd.DataFrame([{
+                    'Booking ID': b['booking_id'],
+                    'Guest Email': b['guest_email'],
+                    'Guest Name': b.get('guest_name', 'N/A'),
+                    'Play Date': b['play_date'],
+                    'Tee Time': get_tee_time_from_booking(b),
+                    'Course': b.get('golf_courses', 'N/A')
+                } for b in post_play_bookings[:10]])
+                st.dataframe(preview_df, use_container_width=True)
+
+                if len(post_play_bookings) > 10:
+                    st.info(f"Showing first 10 of {len(post_play_bookings)} bookings")
+
+        st.markdown("<div style='height: 1px; background: #3b82f6; margin: 1.5rem 0;'></div>", unsafe_allow_html=True)
+
+        col_post1, col_post2 = st.columns(2)
+
+        with col_post1:
+            if st.button("Dry Run (Preview Only)", use_container_width=True, key="post_play_dry"):
+                with st.spinner("Running preview..."):
+                    sent, failed, results = process_post_play_emails(club_filter=st.session_state.customer_id, dry_run=True)
+                    st.success(f"Preview complete: {len(results)} emails would be sent")
+
+                    if results:
+                        results_df = pd.DataFrame(results)
+                        st.dataframe(results_df, use_container_width=True)
+
+        with col_post2:
+            if st.button("Send Post-Play Emails", use_container_width=True, key="post_play_send", type="primary"):
+                if len(config_status) < 4:
+                    st.error("Email configuration incomplete. Please set all required environment variables.")
+                else:
+                    with st.spinner("Sending post-play emails..."):
+                        sent, failed, results = process_post_play_emails(club_filter=st.session_state.customer_id, dry_run=False)
+
+                        if sent > 0:
+                            st.success(f"Successfully sent {sent} post-play emails")
+                        if failed > 0:
+                            st.error(f"Failed to send {failed} emails")
+
+                        if results:
+                            results_df = pd.DataFrame(results)
+                            st.dataframe(results_df, use_container_width=True)
+
+    with tab3:
+        st.markdown("### Campaign Settings")
+
+        st.markdown("""
+            <div style='background: #1e3a8a; border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;'>
+                <div style='color: #f9fafb; font-weight: 700; font-size: 1.125rem; margin-bottom: 1rem;'>Configuration</div>
+                <div style='color: #ffffff; margin-bottom: 0.5rem;'><strong>SendGrid API Key:</strong> {}</div>
+                <div style='color: #ffffff; margin-bottom: 0.5rem;'><strong>From Email:</strong> {}</div>
+                <div style='color: #ffffff; margin-bottom: 0.5rem;'><strong>From Name:</strong> {}</div>
+                <div style='color: #ffffff; margin-bottom: 0.5rem;'><strong>Pre-Arrival Template ID:</strong> {}</div>
+                <div style='color: #ffffff; margin-bottom: 0.5rem;'><strong>Post-Play Template ID:</strong> {}</div>
+            </div>
+        """.format(
+            "Configured" if EmailConfig.SENDGRID_API_KEY else "Not Set",
+            EmailConfig.FROM_EMAIL or "Not Set",
+            EmailConfig.FROM_NAME,
+            EmailConfig.TEMPLATE_PRE_ARRIVAL or "Not Set",
+            EmailConfig.TEMPLATE_POST_PLAY or "Not Set"
+        ), unsafe_allow_html=True)
+
+        st.markdown("""
+            <div style='background: #1e3a8a; border: 2px solid #3b82f6; border-radius: 12px; padding: 1.5rem;'>
+                <div style='color: #f9fafb; font-weight: 700; font-size: 1.125rem; margin-bottom: 1rem;'>Email Timing</div>
+                <div style='color: #ffffff; margin-bottom: 0.5rem;'><strong>Pre-Arrival Emails:</strong> Sent {} days before play date</div>
+                <div style='color: #ffffff; margin-bottom: 0.5rem;'><strong>Post-Play Emails:</strong> Sent {} days after play date</div>
+            </div>
+        """.format(EmailConfig.PRE_ARRIVAL_DAYS, EmailConfig.POST_PLAY_DAYS), unsafe_allow_html=True)
+
+        st.markdown("<div style='height: 1px; background: #3b82f6; margin: 1.5rem 0;'></div>", unsafe_allow_html=True)
+
+        st.markdown("### Database Tracking")
+        st.markdown("<p style='color: #ffffff;'>To enable email tracking and prevent duplicate sends, add these columns to your bookings table:</p>", unsafe_allow_html=True)
+
+        st.code("""
+ALTER TABLE bookings ADD COLUMN pre_arrival_email_sent_at TIMESTAMP;
+ALTER TABLE bookings ADD COLUMN post_play_email_sent_at TIMESTAMP;
+        """, language="sql")
+
+        st.markdown("""
+            <div style='background: #1e3a8a; border: 2px solid #fbbf24; border-radius: 12px; padding: 1.5rem; margin-top: 1rem;'>
+                <div style='color: #fbbf24; font-weight: 700; margin-bottom: 0.5rem;'>Note:</div>
+                <div style='color: #ffffff; font-size: 0.875rem;'>The email automation will work without these columns, but emails may be sent multiple times to the same customer. Adding these tracking columns is recommended for production use.</div>
+            </div>
+        """, unsafe_allow_html=True)
 
 
 # ========================================
