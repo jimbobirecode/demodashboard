@@ -261,7 +261,7 @@ def generate_status_progress_bar(current_status: str) -> str:
     is_cancelled = current_status == 'Cancelled'
 
     if is_rejected or is_cancelled:
-        status_color = '#ef4444' if is_rejected else '#6b7280'
+        status_color = '#ef4444' if is_rejected else '#ffffff'
         return f"""
         <div style='background: #059669; padding: 1rem; border-radius: 8px; border: 2px solid #10b981;'>
             <div style='display: flex; align-items: center; justify-content: center; gap: 0.75rem;'>
@@ -297,7 +297,7 @@ def generate_status_progress_bar(current_status: str) -> str:
         is_current = i == current_index
 
         bg_color = stage['color'] if is_active else '#1e293b'
-        text_color = '#ffffff' if is_active else '#6b7280'
+        text_color = '#ffffff' if is_active else '#ffffff'
         border_color = stage['color'] if is_current else ('#10b981' if is_active else '#1e293b')
         box_shadow = '0 0 0 4px rgba(16, 185, 129, 0.4)' if is_current else 'none'
 
@@ -432,13 +432,13 @@ st.markdown("""
     }
 
     .booking-email {
-        color: #94a3b8;
+        color: #ffffff;
         font-size: 0.875rem;
         margin: 0.375rem 0 0 0;
     }
 
     .timestamp {
-        color: #94a3b8;
+        color: #ffffff;
         font-size: 0.8125rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -497,39 +497,39 @@ st.markdown("""
     }
 
     .status-inquiry {
-        background: rgba(96, 165, 250, 0.2);
-        color: #3b82f6;
-        border: 2px solid rgba(96, 165, 250, 0.3);
+        background: #3b82f6;
+        color: #ffffff;
+        border: 2px solid #3b82f6;
     }
 
     .status-requested {
-        background: rgba(234, 179, 8, 0.2);
-        color: #fbbf24;
-        border: 2px solid rgba(234, 179, 8, 0.3);
+        background: #fbbf24;
+        color: #1f2937;
+        border: 2px solid #fbbf24;
     }
 
     .status-confirmed {
-        background: rgba(34, 197, 94, 0.2);
-        color: #a78bfa;
-        border: 2px solid rgba(34, 197, 94, 0.3);
+        background: #a78bfa;
+        color: #ffffff;
+        border: 2px solid #a78bfa;
     }
 
     .status-booked {
-        background: rgba(16, 185, 129, 0.2);
-        color: #10b981;
-        border: 2px solid rgba(16, 185, 129, 0.3);
+        background: #10b981;
+        color: #ffffff;
+        border: 2px solid #10b981;
     }
 
     .status-rejected {
-        background: rgba(239, 68, 68, 0.2);
-        color: #ef4444;
-        border: 2px solid rgba(239, 68, 68, 0.3);
+        background: #ef4444;
+        color: #ffffff;
+        border: 2px solid #ef4444;
     }
 
     .status-cancelled {
-        background: rgba(100, 116, 139, 0.2);
-        color: #64748b;
-        border: 2px solid rgba(100, 116, 139, 0.3);
+        background: #64748b;
+        color: #ffffff;
+        border: 2px solid #64748b;
     }
     
     .stButton > button {
@@ -569,7 +569,7 @@ st.markdown("""
     }
 
     p, span, div, label {
-        color: #94a3b8 !important;
+        color: #ffffff !important;
     }
 
     .user-badge {
@@ -597,7 +597,7 @@ st.markdown("""
     }
 
     .data-label {
-        color: #94a3b8;
+        color: #ffffff;
         font-size: 0.75rem;
         font-weight: 600;
         text-transform: uppercase;
@@ -674,8 +674,8 @@ if st.session_state.show_password_change:
             padding: 2.5rem;
             background: linear-gradient(135deg, #059669 0%, #10b981 100%);
             border-radius: 16px;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border: 2px solid #10b981;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
         }
         .password-title {
             color: #ffffff;
@@ -748,7 +748,7 @@ if not st.session_state.authenticated:
             margin-bottom: 2rem;
         }
         .login-subtitle {
-            color: #94a3b8;
+            color: #ffffff;
             text-align: center;
             margin-bottom: 3rem;
             font-size: 1.1rem;
@@ -760,7 +760,7 @@ if not st.session_state.authenticated:
     # Center the logo
     st.markdown("""
         <div style='display: flex; justify-content: center; align-items: center;'>
-            <img src='https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/images.png' width='300' style='display: block; margin: 0 auto;'/>
+            <img src='https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/file.svg' width='300' style='display: block; margin: 0 auto;'/>
         </div>
     """, unsafe_allow_html=True)
 
@@ -799,7 +799,7 @@ if not st.session_state.authenticated:
                 st.error("Please enter username and password")
     
     st.markdown("""
-        <div style='text-align: center; color: #6b7280; font-size: 0.85rem; margin-top: 2rem;'>
+        <div style='text-align: center; color: #ffffff; font-size: 0.85rem; margin-top: 2rem;'>
             <p>First time? Use your temporary password</p>
         </div>
     """, unsafe_allow_html=True)
@@ -1503,7 +1503,7 @@ with st.sidebar:
     st.markdown("""
         <div style='text-align: center; padding: 1rem 0.5rem; margin-bottom: 1rem;'>
     """, unsafe_allow_html=True)
-    st.image("https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/images.png",
+    st.image("https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/file.svg",
              width=200)
     st.markdown("""
         </div>
@@ -1619,7 +1619,7 @@ if page == "Bookings":
     with header_col1:
         st.markdown("""
             <h2 style='margin-bottom: 0.5rem;'>Booking Requests</h2>
-            <p style='color: #94a3b8; margin-bottom: 1rem; font-size: 0.9375rem;'>Manage and track all incoming tee time requests</p>
+            <p style='color: #ffffff; margin-bottom: 1rem; font-size: 0.9375rem;'>Manage and track all incoming tee time requests</p>
         """, unsafe_allow_html=True)
     with header_col2:
         if st.button("Refresh", key="refresh_bookings", use_container_width=True, help="Refresh booking data"):
@@ -1683,7 +1683,7 @@ if page == "Bookings":
             st.session_state.clicked_status_filter = "Inquiry"
             st.cache_data.clear()
             st.rerun()
-        st.markdown(f"<div style='text-align: center; color: #94a3b8; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {inquiry_count}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='text-align: center; color: #ffffff; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {inquiry_count}</div>", unsafe_allow_html=True)
     
     with col2:
         requested_count = len(filtered_df[filtered_df['status'] == 'Requested'])
@@ -1691,7 +1691,7 @@ if page == "Bookings":
             st.session_state.clicked_status_filter = "Requested"
             st.cache_data.clear()
             st.rerun()
-        st.markdown(f"<div style='text-align: center; color: #94a3b8; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {requested_count}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='text-align: center; color: #ffffff; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {requested_count}</div>", unsafe_allow_html=True)
     
     with col3:
         confirmed_count = len(filtered_df[filtered_df['status'] == 'Confirmed'])
@@ -1699,7 +1699,7 @@ if page == "Bookings":
             st.session_state.clicked_status_filter = "Confirmed"
             st.cache_data.clear()
             st.rerun()
-        st.markdown(f"<div style='text-align: center; color: #94a3b8; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {confirmed_count}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='text-align: center; color: #ffffff; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {confirmed_count}</div>", unsafe_allow_html=True)
     
     with col4:
         booked_count = len(filtered_df[filtered_df['status'] == 'Booked'])
@@ -1707,7 +1707,7 @@ if page == "Bookings":
             st.session_state.clicked_status_filter = "Booked"
             st.cache_data.clear()
             st.rerun()
-        st.markdown(f"<div style='text-align: center; color: #94a3b8; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {booked_count}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='text-align: center; color: #ffffff; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {booked_count}</div>", unsafe_allow_html=True)
     
     st.markdown("<div style='height: 2px; background: #3b82f6; margin: 2rem 0;'></div>", unsafe_allow_html=True)
     
@@ -1810,7 +1810,7 @@ if page == "Bookings":
                 else:
                     checkout_str = "Not Set"
     
-                hotel_dates_html = f"<div style='background: #f59e0b; padding: 1rem; border-radius: 8px; margin-top: 1rem;'><div style='color: #ffffff; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;'>Hotel Accommodation</div><div style='display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;'><div><div style='color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Check-In</div><div style='color: #ffffff; font-size: 0.95rem; font-weight: 700;'>{checkin_str}</div></div><div><div style='color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Check-Out</div><div style='color: #ffffff; font-size: 0.95rem; font-weight: 700;'>{checkout_str}</div></div></div></div>"
+                hotel_dates_html = f"<div style='background: #f59e0b; padding: 1rem; border-radius: 8px; margin-top: 1rem;'><div style='color: #ffffff; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;'>Hotel Accommodation</div><div style='display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;'><div><div style='color: #ffffff; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Check-In</div><div style='color: #ffffff; font-size: 0.95rem; font-weight: 700;'>{checkin_str}</div></div><div><div style='color: #ffffff; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Check-Out</div><div style='color: #ffffff; font-size: 0.95rem; font-weight: 700;'>{checkout_str}</div></div></div></div>"
     
             # Golf courses and tee times section
             golf_courses = booking.get('golf_courses', '')
@@ -1821,7 +1821,7 @@ if page == "Bookings":
                 courses_list = str(golf_courses).strip()
                 times_list = str(selected_tee_times).strip() if selected_tee_times and not pd.isna(selected_tee_times) else "Times not specified"
     
-                golf_info_html = f"<div style='background: #10b981; padding: 1rem; border-radius: 8px; margin-top: 1rem;'><div style='color: #ffffff; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;'>Golf Courses & Tee Times</div><div style='display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;'><div><div style='color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Courses</div><div style='color: #ffffff; font-size: 0.875rem; font-weight: 600; line-height: 1.5;'>{html.escape(courses_list)}</div></div><div><div style='color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Tee Times</div><div style='color: #ffffff; font-size: 0.875rem; font-weight: 600; line-height: 1.5;'>{html.escape(times_list)}</div></div></div></div>"
+                golf_info_html = f"<div style='background: #10b981; padding: 1rem; border-radius: 8px; margin-top: 1rem;'><div style='color: #ffffff; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;'>Golf Courses & Tee Times</div><div style='display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;'><div><div style='color: #ffffff; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Courses</div><div style='color: #ffffff; font-size: 0.875rem; font-weight: 600; line-height: 1.5;'>{html.escape(courses_list)}</div></div><div><div style='color: #ffffff; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;'>Tee Times</div><div style='color: #ffffff; font-size: 0.875rem; font-weight: 600; line-height: 1.5;'>{html.escape(times_list)}</div></div></div></div>"
     
             # Build complete card HTML including progress bar and details
             card_html = f"<div class='booking-card' style='background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; margin-bottom: 0.5rem; box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3); transition: all 0.3s ease;'><div style='display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;'><div style='flex: 1;'><div style='display: flex; align-items: center;'><div class='booking-id' style='margin-bottom: 0.5rem;'>{html.escape(str(booking['booking_id']))}</div>{hotel_badge}</div><div class='booking-email'>{html.escape(str(booking['guest_email']))}</div></div><div style='text-align: right;'><div class='timestamp'>REQUESTED</div><div class='timestamp-value'>{requested_time}</div></div></div><div style='margin-bottom: 1.5rem;'>{progress_html}</div><div style='height: 1px; background: linear-gradient(90deg, transparent, #3b82f6, transparent); margin: 1.5rem 0;'></div><div style='display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 1rem;'><div><div class='data-label' style='margin-bottom: 0.5rem;'>TEE DATE</div><div style='font-size: 1rem; font-weight: 600; color: #f9fafb;'>{booking['date'].strftime('%b %d, %Y')}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>TEE TIME</div><div style='font-size: 1rem; font-weight: 600; color: #f9fafb;'>{tee_time_display}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>PLAYERS</div><div style='font-size: 1rem; font-weight: 600; color: #f9fafb;'>{booking['players']}</div></div><div><div class='data-label' style='margin-bottom: 0.5rem;'>TOTAL</div><div style='font-size: 1.5rem; font-weight: 700; color: #10b981;'>€{booking['total']:,.2f}</div></div></div>{golf_info_html}{hotel_dates_html}</div>"
@@ -2007,7 +2007,7 @@ if page == "Bookings":
 elif page == "Reports & Analytics":
     st.markdown("""
         <h2 style='margin-bottom: 0.5rem;'>Reports & Analytics</h2>
-        <p style='color: #94a3b8; margin-bottom: 1.5rem; font-size: 0.9375rem;'>Comprehensive insights into your booking performance</p>
+        <p style='color: #ffffff; margin-bottom: 1.5rem; font-size: 0.9375rem;'>Comprehensive insights into your booking performance</p>
     """, unsafe_allow_html=True)
 
     # Load all bookings for analytics
@@ -2078,7 +2078,7 @@ elif page == "Reports & Analytics":
         total_bookings = len(analysis_df)
         st.markdown(f"""
             <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center;'>
-                <div style='color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Total Bookings</div>
+                <div style='color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Total Bookings</div>
                 <div style='color: #f9fafb; font-size: 2.5rem; font-weight: 700;'>{total_bookings}</div>
             </div>
         """, unsafe_allow_html=True)
@@ -2087,7 +2087,7 @@ elif page == "Reports & Analytics":
         total_revenue = analysis_df['total'].sum()
         st.markdown(f"""
             <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center;'>
-                <div style='color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Total Revenue</div>
+                <div style='color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Total Revenue</div>
                 <div style='color: #10b981; font-size: 2.5rem; font-weight: 700;'>€{total_revenue:,.0f}</div>
             </div>
         """, unsafe_allow_html=True)
@@ -2096,7 +2096,7 @@ elif page == "Reports & Analytics":
         avg_booking_value = analysis_df['total'].mean() if len(analysis_df) > 0 else 0
         st.markdown(f"""
             <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center;'>
-                <div style='color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Avg Booking Value</div>
+                <div style='color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Avg Booking Value</div>
                 <div style='color: #f9fafb; font-size: 2.5rem; font-weight: 700;'>€{avg_booking_value:,.0f}</div>
             </div>
         """, unsafe_allow_html=True)
@@ -2105,7 +2105,7 @@ elif page == "Reports & Analytics":
         total_players = analysis_df['players'].sum()
         st.markdown(f"""
             <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center;'>
-                <div style='color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Total Players</div>
+                <div style='color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Total Players</div>
                 <div style='color: #f9fafb; font-size: 2.5rem; font-weight: 700;'>{int(total_players)}</div>
             </div>
         """, unsafe_allow_html=True)
@@ -2139,7 +2139,7 @@ elif page == "Reports & Analytics":
                 <div style='background: #10b981; border: 2px solid #10b981; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;'>
                     <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;'>
                         <div style='color: #f9fafb; font-weight: 600; font-size: 1rem;'>{row['Status']}</div>
-                        <div style='color: #94a3b8; font-weight: 700; font-size: 1.125rem;'>{int(row['Count'])}</div>
+                        <div style='color: #ffffff; font-weight: 700; font-size: 1.125rem;'>{int(row['Count'])}</div>
                     </div>
                     <div style='background: #1e3a8a; border-radius: 4px; height: 8px; overflow: hidden;'>
                         <div style='background: linear-gradient(90deg, #3b82f6, #10b981); height: 100%; width: {bar_width}%;'></div>
@@ -2198,7 +2198,7 @@ elif page == "Reports & Analytics":
 
             st.markdown(f"""
                 <div style='display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;'>
-                    <div style='color: #94a3b8; font-weight: 600; min-width: 100px; font-size: 0.875rem;'>{row['Date']}</div>
+                    <div style='color: #ffffff; font-weight: 600; min-width: 100px; font-size: 0.875rem;'>{row['Date']}</div>
                     <div style='flex: 1; background: #10b981; border-radius: 4px; height: 24px; overflow: hidden; border: 1px solid #10b981;'>
                         <div style='background: linear-gradient(90deg, #3b82f6, #10b981); height: 100%; width: {bar_width}%; display: flex; align-items: center; padding-left: 0.5rem;'>
                             <span style='color: #f9fafb; font-weight: 600; font-size: 0.75rem;'>{int(row['Bookings'])}</span>
@@ -2244,7 +2244,7 @@ elif page == "Reports & Analytics":
                 <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem;'>
                     <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;'>
                         <div style='color: #f9fafb; font-weight: 700; font-size: 1.25rem;'>{stage}</div>
-                        <div style='color: #94a3b8; font-weight: 700; font-size: 1.5rem;'>{count}</div>
+                        <div style='color: #ffffff; font-weight: 700; font-size: 1.5rem;'>{count}</div>
                     </div>
                     <div style='background: #1e3a8a; border-radius: 6px; height: 12px; overflow: hidden;'>
                         <div style='background: linear-gradient(90deg, #3b82f6, #10b981); height: 100%; width: {bar_width}%;'></div>
@@ -2263,7 +2263,7 @@ elif page == "Reports & Analytics":
             <div style='background: #3a5a40; border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center; margin-top: 1.5rem;'>
                 <div style='color: #ffffff; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Overall Conversion Rate</div>
                 <div style='color: #10b981; font-size: 3rem; font-weight: 700;'>{overall_conversion:.1f}%</div>
-                <div style='color: rgba(255,255,255,0.8); font-size: 0.875rem; margin-top: 0.5rem;'>From Inquiry to Booked</div>
+                <div style='color: #ffffff; font-size: 0.875rem; margin-top: 0.5rem;'>From Inquiry to Booked</div>
             </div>
         """, unsafe_allow_html=True)
 
@@ -2293,7 +2293,7 @@ elif page == "Reports & Analytics":
                     <div style='background: #10b981; border: 1px solid #10b981; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.5rem;'>
                         <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;'>
                             <div style='color: #f9fafb; font-weight: 600;'>{tee_time}</div>
-                            <div style='color: #94a3b8; font-weight: 700;'>{int(count)} bookings</div>
+                            <div style='color: #ffffff; font-weight: 700;'>{int(count)} bookings</div>
                         </div>
                         <div style='background: #1e3a8a; border-radius: 3px; height: 6px; overflow: hidden;'>
                             <div style='background: #3b82f6; height: 100%; width: {bar_width}%;'></div>
@@ -2321,7 +2321,7 @@ elif page == "Reports & Analytics":
                     <div style='background: #10b981; border: 1px solid #10b981; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.5rem;'>
                         <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;'>
                             <div style='color: #f9fafb; font-weight: 600;'>{day}</div>
-                            <div style='color: #94a3b8; font-weight: 700;'>{int(count)} bookings</div>
+                            <div style='color: #ffffff; font-weight: 700;'>{int(count)} bookings</div>
                         </div>
                         <div style='background: #1e3a8a; border-radius: 3px; height: 6px; overflow: hidden;'>
                             <div style='background: #10b981; height: 100%; width: {bar_width}%;'></div>
@@ -2347,7 +2347,7 @@ elif page == "Reports & Analytics":
             avg_lead_time = lead_times_df['lead_time_days'].mean()
             st.markdown(f"""
                 <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center;'>
-                    <div style='color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Average Lead Time</div>
+                    <div style='color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Average Lead Time</div>
                     <div style='color: #f9fafb; font-size: 2.5rem; font-weight: 700;'>{avg_lead_time:.1f}</div>
                     <div style='color: #64748b; font-size: 0.875rem;'>days in advance</div>
                 </div>
@@ -2357,7 +2357,7 @@ elif page == "Reports & Analytics":
             min_lead_time = lead_times_df['lead_time_days'].min()
             st.markdown(f"""
                 <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center;'>
-                    <div style='color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Minimum Lead Time</div>
+                    <div style='color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Minimum Lead Time</div>
                     <div style='color: #f9fafb; font-size: 2.5rem; font-weight: 700;'>{min_lead_time}</div>
                     <div style='color: #64748b; font-size: 0.875rem;'>days</div>
                 </div>
@@ -2367,7 +2367,7 @@ elif page == "Reports & Analytics":
             max_lead_time = lead_times_df['lead_time_days'].max()
             st.markdown(f"""
                 <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center;'>
-                    <div style='color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Maximum Lead Time</div>
+                    <div style='color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Maximum Lead Time</div>
                     <div style='color: #f9fafb; font-size: 2.5rem; font-weight: 700;'>{max_lead_time}</div>
                     <div style='color: #64748b; font-size: 0.875rem;'>days</div>
                 </div>
@@ -2393,7 +2393,7 @@ elif page == "Reports & Analytics":
                 <div style='background: #10b981; border: 1px solid #10b981; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.5rem;'>
                     <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;'>
                         <div style='color: #f9fafb; font-weight: 600;'>{label}</div>
-                        <div style='color: #94a3b8; font-weight: 700;'>{count} bookings ({percentage:.1f}%)</div>
+                        <div style='color: #ffffff; font-weight: 700;'>{count} bookings ({percentage:.1f}%)</div>
                     </div>
                     <div style='background: #1e3a8a; border-radius: 3px; height: 6px; overflow: hidden;'>
                         <div style='background: linear-gradient(90deg, #3b82f6, #10b981); height: 100%; width: {percentage}%;'></div>
@@ -2420,7 +2420,7 @@ elif page == "Reports & Analytics":
             unique_customers = len(customer_freq_df)
             st.markdown(f"""
                 <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center;'>
-                    <div style='color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;'>Unique Customers</div>
+                    <div style='color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;'>Unique Customers</div>
                     <div style='color: #f9fafb; font-size: 2.5rem; font-weight: 700;'>{unique_customers}</div>
                 </div>
             """, unsafe_allow_html=True)
@@ -2429,7 +2429,7 @@ elif page == "Reports & Analytics":
             avg_inquiries = customer_freq_df['Total Inquiries'].mean()
             st.markdown(f"""
                 <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center;'>
-                    <div style='color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;'>Avg Inquiries/Customer</div>
+                    <div style='color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;'>Avg Inquiries/Customer</div>
                     <div style='color: #f9fafb; font-size: 2.5rem; font-weight: 700;'>{avg_inquiries:.1f}</div>
                 </div>
             """, unsafe_allow_html=True)
@@ -2438,7 +2438,7 @@ elif page == "Reports & Analytics":
             repeat_customers = len(customer_freq_df[customer_freq_df['Total Inquiries'] > 1])
             st.markdown(f"""
                 <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center;'>
-                    <div style='color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;'>Repeat Customers</div>
+                    <div style='color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;'>Repeat Customers</div>
                     <div style='color: #f9fafb; font-size: 2.5rem; font-weight: 700;'>{repeat_customers}</div>
                 </div>
             """, unsafe_allow_html=True)
@@ -2454,7 +2454,7 @@ elif page == "Reports & Analytics":
                             <div style='color: #64748b; font-size: 0.75rem;'>{int(row['Completed Bookings'])} completed | {row['Conversion Rate']}% conversion</div>
                         </div>
                         <div style='text-align: right;'>
-                            <div style='color: #94a3b8; font-weight: 700;'>{int(row['Total Inquiries'])} inquiries</div>
+                            <div style='color: #ffffff; font-weight: 700;'>{int(row['Total Inquiries'])} inquiries</div>
                             <div style='color: #10b981; font-weight: 600;'>€{row['Total Revenue']:,.0f}</div>
                         </div>
                     </div>
@@ -2486,7 +2486,7 @@ elif page == "Reports & Analytics":
                             <div style='color: #64748b; font-size: 0.875rem; margin-top: 0.25rem;'>{int(row['Confirmed Bookings'])} confirmed | {row['Conversion Rate']}% conversion</div>
                         </div>
                         <div style='text-align: right;'>
-                            <div style='color: #94a3b8; font-weight: 700; font-size: 1.5rem;'>{int(row['Total Requests'])}</div>
+                            <div style='color: #ffffff; font-weight: 700; font-size: 1.5rem;'>{int(row['Total Requests'])}</div>
                             <div style='color: #64748b; font-size: 0.75rem;'>total requests</div>
                         </div>
                     </div>
@@ -2561,7 +2561,7 @@ elif page == "Reports & Analytics":
 elif page == "Waitlist":
     st.markdown("""
         <h2 style='margin-bottom: 0.5rem;'>Tee Time Waitlist</h2>
-        <p style='color: #94a3b8; margin-bottom: 1.5rem; font-size: 0.9375rem;'>Manage tee time requests and notify customers of availability</p>
+        <p style='color: #ffffff; margin-bottom: 1.5rem; font-size: 0.9375rem;'>Manage tee time requests and notify customers of availability</p>
     """, unsafe_allow_html=True)
 
     # Load waitlist data
@@ -2574,7 +2574,7 @@ elif page == "Waitlist":
         waiting_count = len(waitlist_df[waitlist_df['status'] == 'Waiting']) if not waitlist_df.empty else 0
         st.markdown(f"""
             <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center;'>
-                <div style='color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;'>Waiting</div>
+                <div style='color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;'>Waiting</div>
                 <div style='color: #fbbf24; font-size: 2.5rem; font-weight: 700;'>{waiting_count}</div>
             </div>
         """, unsafe_allow_html=True)
@@ -2583,7 +2583,7 @@ elif page == "Waitlist":
         notified_count = len(waitlist_df[waitlist_df['status'] == 'Notified']) if not waitlist_df.empty else 0
         st.markdown(f"""
             <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center;'>
-                <div style='color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;'>Notified</div>
+                <div style='color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;'>Notified</div>
                 <div style='color: #3b82f6; font-size: 2.5rem; font-weight: 700;'>{notified_count}</div>
             </div>
         """, unsafe_allow_html=True)
@@ -2592,7 +2592,7 @@ elif page == "Waitlist":
         converted_count = len(waitlist_df[waitlist_df['status'] == 'Converted']) if not waitlist_df.empty else 0
         st.markdown(f"""
             <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center;'>
-                <div style='color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;'>Converted</div>
+                <div style='color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;'>Converted</div>
                 <div style='color: #10b981; font-size: 2.5rem; font-weight: 700;'>{converted_count}</div>
             </div>
         """, unsafe_allow_html=True)
@@ -2601,7 +2601,7 @@ elif page == "Waitlist":
         expired_count = len(waitlist_df[waitlist_df['status'] == 'Expired']) if not waitlist_df.empty else 0
         st.markdown(f"""
             <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center;'>
-                <div style='color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;'>Expired</div>
+                <div style='color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;'>Expired</div>
                 <div style='color: #64748b; font-size: 2.5rem; font-weight: 700;'>{expired_count}</div>
             </div>
         """, unsafe_allow_html=True)
@@ -2681,7 +2681,7 @@ elif page == "Waitlist":
                     <div style='display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;'>
                         <div>
                             <div style='color: #f9fafb; font-weight: 700; font-size: 1rem;'>{entry['waitlist_id']}</div>
-                            <div style='color: #94a3b8; font-size: 0.875rem;'>{entry['guest_email']}</div>
+                            <div style='color: #ffffff; font-size: 0.875rem;'>{entry['guest_email']}</div>
                             {f"<div style='color: #64748b; font-size: 0.75rem;'>{entry['guest_name']}</div>" if entry.get('guest_name') else ''}
                         </div>
                         <div style='background: {status_color}20; border: 2px solid {status_color}; color: {status_color}; padding: 0.375rem 0.75rem; border-radius: 6px; font-weight: 600; font-size: 0.75rem; text-transform: uppercase;'>
@@ -2758,7 +2758,7 @@ elif page == "Waitlist":
                     st.markdown(f"""
                         <div style='background: #10b981; border-radius: 8px; padding: 1rem; margin-bottom: 0.5rem;'>
                             <div style='color: #ffffff; font-weight: 600;'>{match['guest_email']}</div>
-                            <div style='color: rgba(255,255,255,0.8); font-size: 0.875rem;'>
+                            <div style='color: #ffffff; font-size: 0.875rem;'>
                                 {match.get('players', 1)} players | Preferred: {match.get('preferred_time', 'Flexible')} | Priority: {match.get('priority', 5)}/10
                             </div>
                         </div>
@@ -2773,7 +2773,7 @@ elif page == "Waitlist":
 elif page == "Marketing Segmentation":
     st.markdown("""
         <h2 style='margin-bottom: 0.5rem;'>Marketing Segmentation</h2>
-        <p style='color: #94a3b8; margin-bottom: 1.5rem; font-size: 0.9375rem;'>Identify customer segments for targeted marketing campaigns</p>
+        <p style='color: #ffffff; margin-bottom: 1.5rem; font-size: 0.9375rem;'>Identify customer segments for targeted marketing campaigns</p>
     """, unsafe_allow_html=True)
 
     # Load booking data for segmentation
@@ -2818,7 +2818,7 @@ elif page == "Marketing Segmentation":
 
     # Frequent Non-Bookers Section (High Priority)
     st.markdown("### High Priority: Frequent Non-Bookers")
-    st.markdown("<p style='color: #94a3b8; margin-bottom: 1rem;'>Customers who have contacted multiple times but never completed a booking - ideal for targeted re-engagement campaigns</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #ffffff; margin-bottom: 1rem;'>Customers who have contacted multiple times but never completed a booking - ideal for targeted re-engagement campaigns</p>", unsafe_allow_html=True)
 
     non_bookers = segments_df[segments_df['Segment'] == 'Frequent Non-Booker'].sort_values('Total Contacts', ascending=False)
 
@@ -2853,7 +2853,7 @@ elif page == "Marketing Segmentation":
 
     # Repeat Inquirers (Medium Priority)
     st.markdown("### Medium Priority: Repeat Inquirers")
-    st.markdown("<p style='color: #94a3b8; margin-bottom: 1rem;'>Customers who have inquired twice but haven't booked - good candidates for follow-up offers</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #ffffff; margin-bottom: 1rem;'>Customers who have inquired twice but haven't booked - good candidates for follow-up offers</p>", unsafe_allow_html=True)
 
     repeat_inquirers = segments_df[segments_df['Segment'] == 'Repeat Inquirer'].sort_values('Total Contacts', ascending=False)
 
@@ -2888,7 +2888,7 @@ elif page == "Marketing Segmentation":
 
     # High-Value Customers (VIP)
     st.markdown("### VIP: High-Value Customers")
-    st.markdown("<p style='color: #94a3b8; margin-bottom: 1rem;'>Customers with completed bookings and high revenue - perfect for loyalty programs</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #ffffff; margin-bottom: 1rem;'>Customers with completed bookings and high revenue - perfect for loyalty programs</p>", unsafe_allow_html=True)
 
     vip_customers = segments_df[segments_df['Segment'] == 'High-Value Customer'].sort_values('Total Revenue', ascending=False)
 
@@ -2968,7 +2968,7 @@ elif page == "Marketing Segmentation":
 elif page == "Notify Integration":
     st.markdown("""
         <h2 style='margin-bottom: 0.5rem;'>Notify Platform Integration</h2>
-        <p style='color: #94a3b8; margin-bottom: 1.5rem; font-size: 0.9375rem;'>Push booking data to Notify platform via JSON, API, or CSV</p>
+        <p style='color: #ffffff; margin-bottom: 1.5rem; font-size: 0.9375rem;'>Push booking data to Notify platform via JSON, API, or CSV</p>
     """, unsafe_allow_html=True)
 
     # Load booking data
@@ -3020,7 +3020,7 @@ elif page == "Notify Integration":
 
     with tab1:
         st.markdown("#### JSON Export")
-        st.markdown("<p style='color: #94a3b8;'>Download booking data in JSON format for manual import to Notify platform</p>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #ffffff;'>Download booking data in JSON format for manual import to Notify platform</p>", unsafe_allow_html=True)
 
         if st.button("Generate JSON", use_container_width=True, key="gen_json"):
             json_data = export_to_json(export_df)
@@ -3036,7 +3036,7 @@ elif page == "Notify Integration":
 
     with tab2:
         st.markdown("#### API Push")
-        st.markdown("<p style='color: #94a3b8;'>Push booking data directly to Notify platform via API</p>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #ffffff;'>Push booking data directly to Notify platform via API</p>", unsafe_allow_html=True)
 
         api_endpoint = st.text_input("API Endpoint URL", placeholder="https://api.notify-platform.com/bookings",
                                       key="api_endpoint")
@@ -3072,7 +3072,7 @@ elif page == "Notify Integration":
 
     with tab3:
         st.markdown("#### CSV Export")
-        st.markdown("<p style='color: #94a3b8;'>Download booking data in CSV format for spreadsheet import</p>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #ffffff;'>Download booking data in CSV format for spreadsheet import</p>", unsafe_allow_html=True)
 
         csv_data = export_notify_csv(export_df)
 
@@ -3099,15 +3099,15 @@ elif page == "Notify Integration":
             <div style='display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;'>
                 <div>
                     <div style='color: #3b82f6; font-weight: 600; margin-bottom: 0.5rem;'>JSON Format</div>
-                    <div style='color: #94a3b8; font-size: 0.875rem;'>Structured data with metadata, ideal for API integrations and data processing systems</div>
+                    <div style='color: #ffffff; font-size: 0.875rem;'>Structured data with metadata, ideal for API integrations and data processing systems</div>
                 </div>
                 <div>
                     <div style='color: #10b981; font-weight: 600; margin-bottom: 0.5rem;'>API Push</div>
-                    <div style='color: #94a3b8; font-size: 0.875rem;'>Direct webhook integration with Bearer token authentication for real-time data sync</div>
+                    <div style='color: #ffffff; font-size: 0.875rem;'>Direct webhook integration with Bearer token authentication for real-time data sync</div>
                 </div>
                 <div>
                     <div style='color: #f59e0b; font-weight: 600; margin-bottom: 0.5rem;'>CSV Format</div>
-                    <div style='color: #94a3b8; font-size: 0.875rem;'>Comma-separated values for spreadsheet compatibility and bulk import tools</div>
+                    <div style='color: #ffffff; font-size: 0.875rem;'>Comma-separated values for spreadsheet compatibility and bulk import tools</div>
                 </div>
             </div>
         </div>
