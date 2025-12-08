@@ -38,13 +38,13 @@ def get_club_display_name(club_id: str) -> str:
         'island_golf_club': 'TeeMail Demo',
     }
 
-    # Try to find mapping (case insensitive)
-    club_id_lower = club_id.lower() if club_id else ''
-    if club_id_lower in club_mapping:
-        return club_mapping[club_id_lower]
+    # Try to find mapping (case insensitive, strip whitespace)
+    club_id_clean = club_id.strip().lower() if club_id else ''
+    if club_id_clean in club_mapping:
+        return club_mapping[club_id_clean]
 
-    # Default: capitalize each word
-    return club_id.replace('_', ' ').replace('-', ' ').title() if club_id else 'Unknown Club'
+    # Default: always return TeeMail Demo
+    return 'TeeMail Demo'
 
 def get_club_color(club_id: str) -> str:
     """
@@ -64,8 +64,8 @@ def get_club_color(club_id: str) -> str:
         'island_golf_club': '#10b981',
     }
 
-    club_id_lower = club_id.lower() if club_id else ''
-    return club_colors.get(club_id_lower, '#10b981')  # Default Emerald Green
+    club_id_clean = club_id.strip().lower() if club_id else ''
+    return club_colors.get(club_id_clean, '#10b981')  # Default Emerald Green
 
 def get_club_info(club_id: str) -> dict:
     """
@@ -125,8 +125,8 @@ def get_club_info(club_id: str) -> dict:
         },
     }
 
-    club_id_lower = club_id.lower() if club_id else ''
-    return club_info.get(club_id_lower, {
+    club_id_clean = club_id.strip().lower() if club_id else ''
+    return club_info.get(club_id_clean, {
         'phone': 'N/A',
         'email': 'N/A',
         'location': 'N/A',
