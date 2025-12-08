@@ -26,10 +26,16 @@ def get_club_display_name(club_id: str) -> str:
     Maps internal club IDs to full display names.
     """
     club_mapping = {
+        # New TeeMail identifiers
         'teemail': 'TeeMail Demo',
         'teemailclub': 'TeeMail Demo',
         'teemail-demo': 'TeeMail Demo',
         'teemail_demo': 'TeeMail Demo',
+        # Legacy Island identifiers (backward compatibility until DB migration)
+        'island': 'TeeMail Demo',
+        'islandgolfclub': 'TeeMail Demo',
+        'island-golf-club': 'TeeMail Demo',
+        'island_golf_club': 'TeeMail Demo',
     }
 
     # Try to find mapping (case insensitive)
@@ -46,10 +52,16 @@ def get_club_color(club_id: str) -> str:
     Returns hex color code for club branding.
     """
     club_colors = {
+        # New TeeMail identifiers
         'teemail': '#10b981',  # TeeMail Demo Emerald Green
         'teemailclub': '#10b981',
         'teemail-demo': '#10b981',
         'teemail_demo': '#10b981',
+        # Legacy Island identifiers (backward compatibility)
+        'island': '#10b981',
+        'islandgolfclub': '#10b981',
+        'island-golf-club': '#10b981',
+        'island_golf_club': '#10b981',
     }
 
     club_id_lower = club_id.lower() if club_id else ''
@@ -61,6 +73,7 @@ def get_club_info(club_id: str) -> dict:
     Returns dict with club details like contact info, location, etc.
     """
     club_info = {
+        # New TeeMail identifiers
         'teemail': {
             'phone': '(555) 000-MAIL',
             'email': 'demo@teemail.com',
@@ -80,6 +93,31 @@ def get_club_info(club_id: str) -> dict:
             'website': 'www.teemail.com'
         },
         'teemail_demo': {
+            'phone': '(555) 000-MAIL',
+            'email': 'demo@teemail.com',
+            'location': 'TeeMail Demo Platform',
+            'website': 'www.teemail.com'
+        },
+        # Legacy Island identifiers (backward compatibility)
+        'island': {
+            'phone': '(555) 000-MAIL',
+            'email': 'demo@teemail.com',
+            'location': 'TeeMail Demo Platform',
+            'website': 'www.teemail.com'
+        },
+        'islandgolfclub': {
+            'phone': '(555) 000-MAIL',
+            'email': 'demo@teemail.com',
+            'location': 'TeeMail Demo Platform',
+            'website': 'www.teemail.com'
+        },
+        'island-golf-club': {
+            'phone': '(555) 000-MAIL',
+            'email': 'demo@teemail.com',
+            'location': 'TeeMail Demo Platform',
+            'website': 'www.teemail.com'
+        },
+        'island_golf_club': {
             'phone': '(555) 000-MAIL',
             'email': 'demo@teemail.com',
             'location': 'TeeMail Demo Platform',
