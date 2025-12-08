@@ -26,10 +26,16 @@ def get_club_display_name(club_id: str) -> str:
     Maps internal club IDs to full display names.
     """
     club_mapping = {
+        # New TeeMail identifiers
         'teemail': 'TeeMail Demo',
         'teemailclub': 'TeeMail Demo',
         'teemail-demo': 'TeeMail Demo',
         'teemail_demo': 'TeeMail Demo',
+        # Legacy Island identifiers (backward compatibility until DB migration)
+        'island': 'TeeMail Demo',
+        'islandgolfclub': 'TeeMail Demo',
+        'island-golf-club': 'TeeMail Demo',
+        'island_golf_club': 'TeeMail Demo',
     }
 
     # Try to find mapping (case insensitive)
@@ -46,10 +52,16 @@ def get_club_color(club_id: str) -> str:
     Returns hex color code for club branding.
     """
     club_colors = {
+        # New TeeMail identifiers
         'teemail': '#10b981',  # TeeMail Demo Emerald Green
         'teemailclub': '#10b981',
         'teemail-demo': '#10b981',
         'teemail_demo': '#10b981',
+        # Legacy Island identifiers (backward compatibility)
+        'island': '#10b981',
+        'islandgolfclub': '#10b981',
+        'island-golf-club': '#10b981',
+        'island_golf_club': '#10b981',
     }
 
     club_id_lower = club_id.lower() if club_id else ''
@@ -61,6 +73,7 @@ def get_club_info(club_id: str) -> dict:
     Returns dict with club details like contact info, location, etc.
     """
     club_info = {
+        # New TeeMail identifiers
         'teemail': {
             'phone': '(555) 000-MAIL',
             'email': 'demo@teemail.com',
@@ -80,6 +93,31 @@ def get_club_info(club_id: str) -> dict:
             'website': 'www.teemail.com'
         },
         'teemail_demo': {
+            'phone': '(555) 000-MAIL',
+            'email': 'demo@teemail.com',
+            'location': 'TeeMail Demo Platform',
+            'website': 'www.teemail.com'
+        },
+        # Legacy Island identifiers (backward compatibility)
+        'island': {
+            'phone': '(555) 000-MAIL',
+            'email': 'demo@teemail.com',
+            'location': 'TeeMail Demo Platform',
+            'website': 'www.teemail.com'
+        },
+        'islandgolfclub': {
+            'phone': '(555) 000-MAIL',
+            'email': 'demo@teemail.com',
+            'location': 'TeeMail Demo Platform',
+            'website': 'www.teemail.com'
+        },
+        'island-golf-club': {
+            'phone': '(555) 000-MAIL',
+            'email': 'demo@teemail.com',
+            'location': 'TeeMail Demo Platform',
+            'website': 'www.teemail.com'
+        },
+        'island_golf_club': {
             'phone': '(555) 000-MAIL',
             'email': 'demo@teemail.com',
             'location': 'TeeMail Demo Platform',
@@ -759,8 +797,8 @@ if not st.session_state.authenticated:
 
     # Center the logo
     st.markdown("""
-        <div style='display: flex; justify-content: center; align-items: center;'>
-            <img src='https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/file.svg' width='300' style='display: block; margin: 0 auto;'/>
+        <div style='display: flex; justify-content: center; align-items: center; margin-bottom: 2rem;'>
+            <img src='https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/file.svg' width='280' style='display: block;'/>
         </div>
     """, unsafe_allow_html=True)
 
@@ -1501,11 +1539,8 @@ def identify_marketing_segments(df):
 with st.sidebar:
     # TeeMail Demo logo
     st.markdown("""
-        <div style='text-align: center; padding: 1rem 0.5rem; margin-bottom: 1rem;'>
-    """, unsafe_allow_html=True)
-    st.image("https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/file.svg",
-             width=200)
-    st.markdown("""
+        <div style='display: flex; justify-content: center; align-items: center; padding: 1rem 0.5rem; margin-bottom: 1rem;'>
+            <img src='https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/file.svg' width='180' style='display: block; margin: 0 auto;'/>
         </div>
     """, unsafe_allow_html=True)
     st.markdown("""
