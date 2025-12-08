@@ -7,6 +7,7 @@ This migration removes all "Island Golf Club" references from the database and r
 1. **bookings** - `club` column
 2. **waitlist** - `club` column
 3. **dashboard_users** - `customer_id` column
+4. **dashboard_users** - `full_name` column (user display names)
 
 ## Mapping Changes
 
@@ -16,6 +17,7 @@ This migration removes all "Island Golf Club" references from the database and r
 | `islandgolfclub` | `teemailclub` |
 | `island-golf-club` | `teemail-demo` |
 | `island_golf_club` | `teemail_demo` |
+| **User full_name with "Island"** | **"TeeMail Demo"** |
 
 ## Pre-Migration Checklist
 
@@ -26,7 +28,19 @@ This migration removes all "Island Golf Club" references from the database and r
 
 ## Running the Migration
 
-### Option 1: Using psql (Recommended)
+### Step 1: Fix User Display Names (Run First)
+
+This fixes the navigation panel showing "The Island Golf Club" as the username:
+
+```bash
+psql $DATABASE_URL -f fix_username_display.sql
+```
+
+### Step 2: Full Database Migration
+
+After fixing user names, run the full migration:
+
+#### Option 1: Using psql (Recommended)
 
 ```bash
 # Connect to your database
