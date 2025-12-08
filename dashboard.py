@@ -760,7 +760,7 @@ if not st.session_state.authenticated:
     # Center the logo
     st.markdown("""
         <div style='display: flex; justify-content: center; align-items: center;'>
-            <img src='https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/file.svg' width='300' style='display: block; margin: 0 auto;'/>
+            <img src='https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/output-onlinepngtools.png' width='300' style='display: block; margin: 0 auto;'/>
         </div>
     """, unsafe_allow_html=True)
 
@@ -1503,7 +1503,7 @@ with st.sidebar:
     st.markdown("""
         <div style='text-align: center; padding: 1rem 0.5rem; margin-bottom: 1rem;'>
     """, unsafe_allow_html=True)
-    st.image("https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/file.svg",
+    st.image("https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/output-onlinepngtools.png",
              width=200)
     st.markdown("""
         </div>
