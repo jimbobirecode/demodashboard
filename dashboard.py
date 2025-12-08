@@ -1539,11 +1539,8 @@ def identify_marketing_segments(df):
 with st.sidebar:
     # TeeMail Demo logo
     st.markdown("""
-        <div style='text-align: center; padding: 1rem 0.5rem; margin-bottom: 1rem;'>
-    """, unsafe_allow_html=True)
-    st.image("https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/output-onlinepngtools.png",
-             width=200)
-    st.markdown("""
+        <div style='display: flex; justify-content: center; align-items: center; padding: 1rem 0.5rem; margin-bottom: 1rem;'>
+            <img src='https://raw.githubusercontent.com/jimbobirecode/TeeMail-Assests/main/file.svg' width='180' style='display: block;'/>
         </div>
     """, unsafe_allow_html=True)
     st.markdown("""
@@ -1556,8 +1553,10 @@ with st.sidebar:
 
     st.markdown(f"<div class='user-badge'>{st.session_state.full_name}</div>", unsafe_allow_html=True)
 
-    # Get club display name
-    club_display = get_club_display_name(st.session_state.customer_id)
+    # Get club display name - always show TeeMail Demo
+    club_display = get_club_display_name(st.session_state.customer_id) if st.session_state.customer_id else 'TeeMail Demo'
+    # Force TeeMail Demo display
+    club_display = 'TeeMail Demo'
     st.markdown(f"<div class='club-badge'>{club_display}</div>", unsafe_allow_html=True)
 
     st.markdown("<div style='height: 1px; background: #3b82f6; margin: 1.5rem 0;'></div>", unsafe_allow_html=True)
