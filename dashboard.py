@@ -26,10 +26,10 @@ def get_club_display_name(club_id: str) -> str:
     Maps internal club IDs to full display names.
     """
     club_mapping = {
-        'island': 'TeeMail Demo',
-        'islandgolfclub': 'TeeMail Demo',
-        'island-golf-club': 'TeeMail Demo',
-        'island_golf_club': 'TeeMail Demo',
+        'teemail': 'TeeMail Demo',
+        'teemailclub': 'TeeMail Demo',
+        'teemail-demo': 'TeeMail Demo',
+        'teemail_demo': 'TeeMail Demo',
     }
 
     # Try to find mapping (case insensitive)
@@ -46,10 +46,10 @@ def get_club_color(club_id: str) -> str:
     Returns hex color code for club branding.
     """
     club_colors = {
-        'island': '#10b981',  # TeeMail Demo Emerald Green
-        'islandgolfclub': '#10b981',
-        'island-golf-club': '#10b981',
-        'island_golf_club': '#10b981',
+        'teemail': '#10b981',  # TeeMail Demo Emerald Green
+        'teemailclub': '#10b981',
+        'teemail-demo': '#10b981',
+        'teemail_demo': '#10b981',
     }
 
     club_id_lower = club_id.lower() if club_id else ''
@@ -61,25 +61,25 @@ def get_club_info(club_id: str) -> dict:
     Returns dict with club details like contact info, location, etc.
     """
     club_info = {
-        'island': {
+        'teemail': {
             'phone': '(555) 000-MAIL',
             'email': 'demo@teemail.com',
             'location': 'TeeMail Demo Platform',
             'website': 'www.teemail.com'
         },
-        'islandgolfclub': {
+        'teemailclub': {
             'phone': '(555) 000-MAIL',
             'email': 'demo@teemail.com',
             'location': 'TeeMail Demo Platform',
             'website': 'www.teemail.com'
         },
-        'island-golf-club': {
+        'teemail-demo': {
             'phone': '(555) 000-MAIL',
             'email': 'demo@teemail.com',
             'location': 'TeeMail Demo Platform',
             'website': 'www.teemail.com'
         },
-        'island_golf_club': {
+        'teemail_demo': {
             'phone': '(555) 000-MAIL',
             'email': 'demo@teemail.com',
             'location': 'TeeMail Demo Platform',
