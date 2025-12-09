@@ -2089,9 +2089,15 @@ if page == "Bookings":
         st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
     
     df, source = load_bookings_from_db('demo')
-    
+
+    # DEBUG: Show raw data count
+    st.info(f"🔍 DEBUG: Loaded {len(df)} total bookings from database (club='demo')")
+    if not df.empty:
+        st.info(f"🔍 DEBUG: Date range in data: {df['date'].min()} to {df['date'].max()}")
+        st.info(f"🔍 DEBUG: Statuses in data: {df['status'].unique().tolist()}")
+
     if df.empty:
-        st.info("No bookings found")
+        st.warning("No bookings found for club='demo' in database")
         st.stop()
     
     filtered_df = df.copy()
