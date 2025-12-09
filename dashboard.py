@@ -232,11 +232,12 @@ def get_upcoming_bookings_for_email(days_ahead=None, club_filter=None):
     conn = get_db_connection()
     cursor = conn.cursor(row_factory=dict_row)
 
-    where_conditions = ["status = 'Confirmed'", "date = %s"]
+    # More flexible status filter - accept multiple confirmation statuses
+    where_conditions = ["status IN ('Confirmed', 'Booked', 'Requested')", "date = %s"]
     params = [target_date]
 
     if club_filter:
-        where_conditions.append("club = %s")
+        where_conditions.append("(club = %s OR club IS NULL OR club = '')")
         params.append(club_filter)
 
     where_clause = " AND ".join(where_conditions)
@@ -292,11 +293,12 @@ def get_recent_bookings_for_email(days_ago=None, club_filter=None):
     conn = get_db_connection()
     cursor = conn.cursor(row_factory=dict_row)
 
-    where_conditions = ["status = 'Confirmed'", "date = %s"]
+    # More flexible status filter - accept multiple confirmation statuses
+    where_conditions = ["status IN ('Confirmed', 'Booked', 'Requested')", "date = %s"]
     params = [target_date]
 
     if club_filter:
-        where_conditions.append("club = %s")
+        where_conditions.append("(club = %s OR club IS NULL OR club = '')")
         params.append(club_filter)
 
     where_clause = " AND ".join(where_conditions)
@@ -3440,6 +3442,10 @@ elif page == "Email Automation":
         st.markdown("### Pre-Arrival Email Campaign")
         st.markdown("<p style='color: #ffffff; margin-bottom: 1rem;'>Send welcome emails to customers 3 days before their tee time</p>", unsafe_allow_html=True)
 
+        # Show target date
+        target_date = (datetime.now() + timedelta(days=EmailConfig.PRE_ARRIVAL_DAYS)).date()
+        st.info(f"Looking for bookings with play date: {target_date.strftime('%A, %B %d, %Y')} (3 days from today)")
+
         # Show pending emails
         pre_arrival_bookings = get_upcoming_bookings_for_email(club_filter=st.session_state.customer_id)
 
@@ -3494,6 +3500,10 @@ elif page == "Email Automation":
     with tab2:
         st.markdown("### Post-Play Email Campaign")
         st.markdown("<p style='color: #ffffff; margin-bottom: 1rem;'>Send thank you emails to customers 2 days after their play date</p>", unsafe_allow_html=True)
+
+        # Show target date
+        target_date_post = (datetime.now() - timedelta(days=EmailConfig.POST_PLAY_DAYS)).date()
+        st.info(f"Looking for bookings with play date: {target_date_post.strftime('%A, %B %d, %Y')} (2 days ago)")
 
         # Show pending emails
         post_play_bookings = get_recent_bookings_for_email(club_filter=st.session_state.customer_id)
