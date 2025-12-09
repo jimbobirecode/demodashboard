@@ -244,7 +244,7 @@ def get_upcoming_bookings_for_email(days_ahead=None, club_filter=None):
     cursor = conn.cursor(row_factory=dict_row)
 
     # More flexible status filter - accept multiple confirmation statuses
-    where_conditions = ["status IN ('Confirmed', 'Booked', 'Requested')", "date = %s"]
+    where_conditions = ["status IN ('Confirmed', 'Booked', 'Requested', 'Inquiry')", "date = %s"]
     params = [target_date]
 
     if club_filter:
@@ -305,7 +305,7 @@ def get_recent_bookings_for_email(days_ago=None, club_filter=None):
     cursor = conn.cursor(row_factory=dict_row)
 
     # More flexible status filter - accept multiple confirmation statuses
-    where_conditions = ["status IN ('Confirmed', 'Booked', 'Requested')", "date = %s"]
+    where_conditions = ["status IN ('Confirmed', 'Booked', 'Requested', 'Inquiry')", "date = %s"]
     params = [target_date]
 
     if club_filter:
