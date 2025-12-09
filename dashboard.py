@@ -1984,9 +1984,14 @@ with st.sidebar:
         "Select View",
         nav_options,
         index=current_index,
+        key="nav_radio",
         label_visibility="collapsed"
     )
-    st.session_state.current_page = page
+
+    # Only update and rerun if page actually changed
+    if page != st.session_state.current_page:
+        st.session_state.current_page = page
+        st.rerun()
 
     st.markdown("<div style='height: 1px; background: #3b82f6; margin: 1.5rem 0;'></div>", unsafe_allow_html=True)
 
@@ -2030,7 +2035,10 @@ with st.sidebar:
 
         # Status filter - if clicked from metric card, use that
         if st.session_state.clicked_status_filter:
-            default_statuses = [st.session_state.clicked_status_filter]
+            if st.session_state.clicked_status_filter == "Inquiry+Pending":
+                default_statuses = ["Inquiry", "Pending"]
+            else:
+                default_statuses = [st.session_state.clicked_status_filter]
         else:
             # Merge default statuses with auto-included ones
             default_statuses = ["Inquiry", "Requested", "Confirmed", "Booked", "Pending"]
@@ -2122,7 +2130,7 @@ if page == "Bookings":
     with col1:
         inquiry_count = len(filtered_df[filtered_df['status'].isin(['Inquiry', 'Pending'])])
         if st.button(f"Inquiry\n{all_inquiry_count}", key="filter_inquiry", use_container_width=True, help="Click to filter Inquiry status"):
-            st.session_state.clicked_status_filter = "Inquiry"
+            st.session_state.clicked_status_filter = "Inquiry+Pending"
             st.cache_data.clear()
             st.rerun()
         st.markdown(f"<div style='text-align: center; color: #ffffff; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {inquiry_count}</div>", unsafe_allow_html=True)
