@@ -2010,12 +2010,18 @@ with st.sidebar:
         # Date preset selector
         date_preset = st.selectbox(
             "Date Preset",
-            ["Today", "Next 7 Days", "Next 30 Days", "Next 60 Days", "Next 90 Days", "All Upcoming", "Custom"],
-            index=2  # Default to "Next 30 Days"
+            ["All Bookings", "Past 30 Days", "Past 7 Days", "Today", "Next 7 Days", "Next 30 Days", "Next 60 Days", "Next 90 Days", "All Upcoming", "Custom"],
+            index=5  # Default to "Next 30 Days"
         )
 
         # Calculate date range based on preset
-        if date_preset == "Today":
+        if date_preset == "All Bookings":
+            date_range = (datetime.now().date() - timedelta(days=365), datetime.now().date() + timedelta(days=365))
+        elif date_preset == "Past 30 Days":
+            date_range = (datetime.now().date() - timedelta(days=30), datetime.now().date())
+        elif date_preset == "Past 7 Days":
+            date_range = (datetime.now().date() - timedelta(days=7), datetime.now().date())
+        elif date_preset == "Today":
             date_range = (datetime.now().date(), datetime.now().date())
         elif date_preset == "Next 7 Days":
             date_range = (datetime.now().date(), datetime.now().date() + timedelta(days=7))
