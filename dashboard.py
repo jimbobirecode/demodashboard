@@ -3468,7 +3468,7 @@ elif page == "Email Automation":
         st.info(f"Looking for bookings with play date: {target_date.strftime('%A, %B %d, %Y')} (3 days from today)")
 
         # Show pending emails
-        pre_arrival_bookings = get_upcoming_bookings_for_email(club_filter=st.session_state.customer_id)
+        pre_arrival_bookings = get_upcoming_bookings_for_email(club_filter='demo')
 
         st.markdown(f"**{len(pre_arrival_bookings)} bookings** ready for pre-arrival emails")
 
@@ -3494,7 +3494,7 @@ elif page == "Email Automation":
         with col_pre1:
             if st.button("Dry Run (Preview Only)", use_container_width=True, key="pre_arrival_dry"):
                 with st.spinner("Running preview..."):
-                    sent, failed, results = process_pre_arrival_emails(club_filter=st.session_state.customer_id, dry_run=True)
+                    sent, failed, results = process_pre_arrival_emails(club_filter='demo', dry_run=True)
                     st.success(f"Preview complete: {len(results)} emails would be sent")
 
                     if results:
@@ -3507,7 +3507,7 @@ elif page == "Email Automation":
                     st.error("Email configuration incomplete. Please set all required environment variables.")
                 else:
                     with st.spinner("Sending pre-arrival emails..."):
-                        sent, failed, results = process_pre_arrival_emails(club_filter=st.session_state.customer_id, dry_run=False)
+                        sent, failed, results = process_pre_arrival_emails(club_filter='demo', dry_run=False)
 
                         if sent > 0:
                             st.success(f"Successfully sent {sent} pre-arrival emails")
@@ -3527,7 +3527,7 @@ elif page == "Email Automation":
         st.info(f"Looking for bookings with play date: {target_date_post.strftime('%A, %B %d, %Y')} (2 days ago)")
 
         # Show pending emails
-        post_play_bookings = get_recent_bookings_for_email(club_filter=st.session_state.customer_id)
+        post_play_bookings = get_recent_bookings_for_email(club_filter='demo')
 
         st.markdown(f"**{len(post_play_bookings)} bookings** ready for post-play emails")
 
@@ -3553,7 +3553,7 @@ elif page == "Email Automation":
         with col_post1:
             if st.button("Dry Run (Preview Only)", use_container_width=True, key="post_play_dry"):
                 with st.spinner("Running preview..."):
-                    sent, failed, results = process_post_play_emails(club_filter=st.session_state.customer_id, dry_run=True)
+                    sent, failed, results = process_post_play_emails(club_filter='demo', dry_run=True)
                     st.success(f"Preview complete: {len(results)} emails would be sent")
 
                     if results:
@@ -3566,7 +3566,7 @@ elif page == "Email Automation":
                     st.error("Email configuration incomplete. Please set all required environment variables.")
                 else:
                     with st.spinner("Sending post-play emails..."):
-                        sent, failed, results = process_post_play_emails(club_filter=st.session_state.customer_id, dry_run=False)
+                        sent, failed, results = process_post_play_emails(club_filter='demo', dry_run=False)
 
                         if sent > 0:
                             st.success(f"Successfully sent {sent} post-play emails")
