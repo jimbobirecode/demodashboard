@@ -163,6 +163,17 @@ def extract_tee_time_from_note(note_content):
     return None
 
 
+def clean_email_address(email):
+    """Remove mailto: prefix and clean email address"""
+    if not email:
+        return None
+    email = str(email).strip()
+    # Remove mailto: prefix if present
+    if email.lower().startswith('mailto:'):
+        email = email[7:]
+    return email.strip()
+
+
 # ============================================================================
 # EMAIL AUTOMATION - Configuration and Helper Functions
 # ============================================================================
@@ -383,7 +394,12 @@ def send_pre_arrival_email(booking):
         if not booking.get('booking_id') or not booking.get('guest_email') or not booking.get('play_date'):
             return False, "Missing required booking fields"
 
-        guest_name = booking.get('guest_name') or booking['guest_email'].split('@')[0].title()
+        # Clean email address (remove mailto: prefix if present)
+        guest_email = clean_email_address(booking['guest_email'])
+        if not guest_email:
+            return False, "Invalid email address"
+
+        guest_name = booking.get('guest_name') or guest_email.split('@')[0].title()
 
         play_date = booking['play_date']
         if hasattr(play_date, 'strftime'):
@@ -406,7 +422,7 @@ def send_pre_arrival_email(booking):
 
         message = Mail(
             from_email=(EmailConfig.FROM_EMAIL, EmailConfig.FROM_NAME),
-            to_emails=booking['guest_email']
+            to_emails=guest_email
         )
         message.template_id = EmailConfig.TEMPLATE_PRE_ARRIVAL
         message.dynamic_template_data = dynamic_data
@@ -416,7 +432,7 @@ def send_pre_arrival_email(booking):
 
         if response.status_code in [200, 202]:
             mark_email_sent(booking['booking_id'], 'pre_arrival')
-            return True, f"Pre-arrival email sent to {booking['guest_email']}"
+            return True, f"Pre-arrival email sent to {guest_email}"
         else:
             return False, f"SendGrid error: {response.status_code}"
 
@@ -433,7 +449,12 @@ def send_post_play_email(booking):
         if not booking.get('booking_id') or not booking.get('guest_email') or not booking.get('play_date'):
             return False, "Missing required booking fields"
 
-        guest_name = booking.get('guest_name') or booking['guest_email'].split('@')[0].title()
+        # Clean email address (remove mailto: prefix if present)
+        guest_email = clean_email_address(booking['guest_email'])
+        if not guest_email:
+            return False, "Invalid email address"
+
+        guest_name = booking.get('guest_name') or guest_email.split('@')[0].title()
 
         play_date = booking['play_date']
         if hasattr(play_date, 'strftime'):
@@ -456,7 +477,7 @@ def send_post_play_email(booking):
 
         message = Mail(
             from_email=(EmailConfig.FROM_EMAIL, EmailConfig.FROM_NAME),
-            to_emails=booking['guest_email']
+            to_emails=guest_email
         )
         message.template_id = EmailConfig.TEMPLATE_POST_PLAY
         message.dynamic_template_data = dynamic_data
@@ -466,7 +487,7 @@ def send_post_play_email(booking):
 
         if response.status_code in [200, 202]:
             mark_email_sent(booking['booking_id'], 'post_play')
-            return True, f"Post-play email sent to {booking['guest_email']}"
+            return True, f"Post-play email sent to {guest_email}"
         else:
             return False, f"SendGrid error: {response.status_code}"
 
@@ -3455,7 +3476,7 @@ elif page == "Email Automation":
             with st.expander("View Pending Pre-Arrival Emails", expanded=True):
                 preview_df = pd.DataFrame([{
                     'Booking ID': b['booking_id'],
-                    'Guest Email': b['guest_email'],
+                    'Guest Email': clean_email_address(b['guest_email']),
                     'Guest Name': b.get('guest_name', 'N/A'),
                     'Play Date': b['play_date'],
                     'Tee Time': get_tee_time_from_booking(b),
@@ -3514,7 +3535,7 @@ elif page == "Email Automation":
             with st.expander("View Pending Post-Play Emails", expanded=True):
                 preview_df = pd.DataFrame([{
                     'Booking ID': b['booking_id'],
-                    'Guest Email': b['guest_email'],
+                    'Guest Email': clean_email_address(b['guest_email']),
                     'Guest Name': b.get('guest_name', 'N/A'),
                     'Play Date': b['play_date'],
                     'Tee Time': get_tee_time_from_booking(b),
