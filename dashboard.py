@@ -2080,7 +2080,7 @@ if page == "Bookings":
     else:
         st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
     
-    df, source = load_bookings_from_db(st.session_state.customer_id)
+    df, source = load_bookings_from_db('demo')
     
     if df.empty:
         st.info("No bookings found")
@@ -2453,7 +2453,7 @@ elif page == "Reports & Analytics":
     """, unsafe_allow_html=True)
 
     # Load all bookings for analytics
-    df, source = load_bookings_from_db(st.session_state.customer_id)
+    df, source = load_bookings_from_db('demo')
 
     if df.empty:
         st.info("No booking data available for analytics")
@@ -3219,7 +3219,7 @@ elif page == "Marketing Segmentation":
     """, unsafe_allow_html=True)
 
     # Load booking data for segmentation
-    df, source = load_bookings_from_db(st.session_state.customer_id)
+    df, source = load_bookings_from_db('demo')
 
     if df.empty:
         st.info("No booking data available for segmentation analysis")
@@ -3633,7 +3633,7 @@ elif page == "Notify Integration":
     """, unsafe_allow_html=True)
 
     # Load booking data
-    df, source = load_bookings_from_db(st.session_state.customer_id)
+    df, source = load_bookings_from_db('demo')
 
     if df.empty:
         st.info("No booking data available for export")
