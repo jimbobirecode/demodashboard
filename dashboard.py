@@ -2181,16 +2181,34 @@ if page == "Bookings":
     else:
         date_str = "all dates"
     
+    # Search bar
+    search_term = st.text_input(
+        "🔍 Search bookings",
+        placeholder="Search by name, email, booking ID, golf course...",
+        key="booking_search"
+    )
+
+    # Apply search filter
+    if search_term:
+        search_lower = search_term.lower()
+        filtered_df = filtered_df[
+            filtered_df['guest_email'].astype(str).str.lower().str.contains(search_lower, na=False) |
+            filtered_df['guest_name'].astype(str).str.lower().str.contains(search_lower, na=False) |
+            filtered_df['booking_id'].astype(str).str.lower().str.contains(search_lower, na=False) |
+            filtered_df.get('golf_courses', pd.Series(dtype=str)).astype(str).str.lower().str.contains(search_lower, na=False) |
+            filtered_df.get('note', pd.Series(dtype=str)).astype(str).str.lower().str.contains(search_lower, na=False)
+        ]
+
     st.markdown(f"""
         <div style='margin-bottom: 1.5rem;'>
             <h3 style='color: #f9fafb; font-weight: 600; font-size: 1.125rem;'>{len(filtered_df)} Active Requests</h3>
             <p style='color: #64748b; font-size: 0.875rem; margin-top: 0.25rem;'>Showing bookings from {date_str}</p>
         </div>
     """, unsafe_allow_html=True)
-    
+
     # Add visual separator
     st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
-    
+
     # ========================================
     # BOOKING CARDS - ENHANCED VERSION
     # ========================================
