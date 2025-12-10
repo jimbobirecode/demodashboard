@@ -2053,6 +2053,13 @@ with st.sidebar:
             default=default_statuses
         )
 
+        # Small group filter
+        show_small_groups_only = st.checkbox(
+            "🏌️ Show only 1-2 player bookings",
+            value=False,
+            help="Filter to show only single or 2-ball bookings"
+        )
+
         # Clear filter button
         if st.button("Clear All Filters", use_container_width=True):
             st.session_state.clicked_status_filter = None
@@ -2127,6 +2134,10 @@ if page == "Bookings":
     filtered_df = date_filtered_df.copy()
     if status_filter:
         filtered_df = filtered_df[filtered_df['status'].isin(status_filter)]
+
+    # Apply small groups filter if enabled
+    if show_small_groups_only:
+        filtered_df = filtered_df[filtered_df['players'] <= 2]
 
     col1, col2, col3, col4 = st.columns(4)
 
