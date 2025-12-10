@@ -2101,23 +2101,9 @@ if page == "Bookings":
     
     df, source = load_bookings_from_db('demo')
 
-    # DEBUG: Show raw data count
-    st.info(f"🔍 DEBUG: Loaded {len(df)} total bookings from database (club='demo')")
-    if not df.empty:
-        st.info(f"🔍 DEBUG: Date range in data: {df['date'].min()} to {df['date'].max()}")
-        st.info(f"🔍 DEBUG: Statuses in data: {df['status'].unique().tolist()}")
-        # Check for NULL or NaT dates
-        null_dates = df['date'].isna().sum()
-        if null_dates > 0:
-            st.warning(f"🔍 DEBUG: Found {null_dates} bookings with NULL/NaT dates!")
-
     if df.empty:
         st.warning("No bookings found for club='demo' in database")
         st.stop()
-
-    # DEBUG: Show filter settings
-    st.info(f"🔍 DEBUG: Date range filter: {date_range if date_range else 'None (showing all dates)'}")
-    st.info(f"🔍 DEBUG: Status filter: {status_filter}")
 
     # Create a date-only filtered dataframe for counting "Showing" numbers
     # This ensures the counts reflect bookings within the date range, regardless of status filter
@@ -2131,49 +2117,24 @@ if page == "Bookings":
             # Convert date objects to datetime for comparison
             start_datetime = pd.to_datetime(start_date)
             end_datetime = pd.to_datetime(end_date)
-            st.info(f"🔍 DEBUG: Filtering dates from {start_datetime} to {end_datetime}")
-
-            # Show which bookings are being filtered out
-            before_filter = date_filtered_df['date'] < start_datetime
-            after_filter = date_filtered_df['date'] > end_datetime
-            st.info(f"🔍 DEBUG: {before_filter.sum()} bookings BEFORE start date, {after_filter.sum()} bookings AFTER end date")
-            if before_filter.sum() > 0:
-                st.warning(f"🔍 DEBUG: Dates before filter: {date_filtered_df[before_filter]['date'].tolist()}")
-            if after_filter.sum() > 0:
-                st.warning(f"🔍 DEBUG: Dates after filter: {date_filtered_df[after_filter]['date'].tolist()}")
-
             date_filtered_df = date_filtered_df[
                 (date_filtered_df['date'] >= start_datetime) &
                 (date_filtered_df['date'] <= end_datetime)
             ]
-            st.info(f"🔍 DEBUG: After date filter: {len(date_filtered_df)} bookings")
         elif hasattr(date_range, '__len__') and len(date_range) == 2:
             start_date, end_date = date_range[0], date_range[1]
             # Convert date objects to datetime for comparison
             start_datetime = pd.to_datetime(start_date)
             end_datetime = pd.to_datetime(end_date)
-            st.info(f"🔍 DEBUG: Filtering dates from {start_datetime} to {end_datetime}")
-
-            # Show which bookings are being filtered out
-            before_filter = date_filtered_df['date'] < start_datetime
-            after_filter = date_filtered_df['date'] > end_datetime
-            st.info(f"🔍 DEBUG: {before_filter.sum()} bookings BEFORE start date, {after_filter.sum()} bookings AFTER end date")
-            if before_filter.sum() > 0:
-                st.warning(f"🔍 DEBUG: Dates before filter: {date_filtered_df[before_filter]['date'].tolist()}")
-            if after_filter.sum() > 0:
-                st.warning(f"🔍 DEBUG: Dates after filter: {date_filtered_df[after_filter]['date'].tolist()}")
-
             date_filtered_df = date_filtered_df[
                 (date_filtered_df['date'] >= start_datetime) &
                 (date_filtered_df['date'] <= end_datetime)
             ]
-            st.info(f"🔍 DEBUG: After date filter: {len(date_filtered_df)} bookings")
 
     # Create the fully filtered dataframe (by both status and date) for displaying bookings
     filtered_df = date_filtered_df.copy()
     if status_filter:
         filtered_df = filtered_df[filtered_df['status'].isin(status_filter)]
-        st.info(f"🔍 DEBUG: After status filter: {len(filtered_df)} bookings")
 
     col1, col2, col3, col4 = st.columns(4)
 
