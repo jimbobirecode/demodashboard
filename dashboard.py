@@ -2106,6 +2106,10 @@ if page == "Bookings":
     if not df.empty:
         st.info(f"🔍 DEBUG: Date range in data: {df['date'].min()} to {df['date'].max()}")
         st.info(f"🔍 DEBUG: Statuses in data: {df['status'].unique().tolist()}")
+        # Check for NULL or NaT dates
+        null_dates = df['date'].isna().sum()
+        if null_dates > 0:
+            st.warning(f"🔍 DEBUG: Found {null_dates} bookings with NULL/NaT dates!")
 
     if df.empty:
         st.warning("No bookings found for club='demo' in database")
@@ -2127,6 +2131,16 @@ if page == "Bookings":
             start_datetime = pd.to_datetime(start_date)
             end_datetime = pd.to_datetime(end_date)
             st.info(f"🔍 DEBUG: Filtering dates from {start_datetime} to {end_datetime}")
+
+            # Show which bookings are being filtered out
+            before_filter = date_filtered_df['date'] < start_datetime
+            after_filter = date_filtered_df['date'] > end_datetime
+            st.info(f"🔍 DEBUG: {before_filter.sum()} bookings BEFORE start date, {after_filter.sum()} bookings AFTER end date")
+            if before_filter.sum() > 0:
+                st.warning(f"🔍 DEBUG: Dates before filter: {date_filtered_df[before_filter]['date'].tolist()}")
+            if after_filter.sum() > 0:
+                st.warning(f"🔍 DEBUG: Dates after filter: {date_filtered_df[after_filter]['date'].tolist()}")
+
             date_filtered_df = date_filtered_df[
                 (date_filtered_df['date'] >= start_datetime) &
                 (date_filtered_df['date'] <= end_datetime)
@@ -2138,6 +2152,16 @@ if page == "Bookings":
             start_datetime = pd.to_datetime(start_date)
             end_datetime = pd.to_datetime(end_date)
             st.info(f"🔍 DEBUG: Filtering dates from {start_datetime} to {end_datetime}")
+
+            # Show which bookings are being filtered out
+            before_filter = date_filtered_df['date'] < start_datetime
+            after_filter = date_filtered_df['date'] > end_datetime
+            st.info(f"🔍 DEBUG: {before_filter.sum()} bookings BEFORE start date, {after_filter.sum()} bookings AFTER end date")
+            if before_filter.sum() > 0:
+                st.warning(f"🔍 DEBUG: Dates before filter: {date_filtered_df[before_filter]['date'].tolist()}")
+            if after_filter.sum() > 0:
+                st.warning(f"🔍 DEBUG: Dates after filter: {date_filtered_df[after_filter]['date'].tolist()}")
+
             date_filtered_df = date_filtered_df[
                 (date_filtered_df['date'] >= start_datetime) &
                 (date_filtered_df['date'] <= end_datetime)
