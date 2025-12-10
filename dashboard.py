@@ -2046,8 +2046,13 @@ with st.sidebar:
             else:
                 default_statuses = [st.session_state.clicked_status_filter]
         else:
-            # Merge default statuses with auto-included ones
-            default_statuses = ["Inquiry", "Requested", "Confirmed", "Booked", "Pending"]
+            # For "All Bookings" and "All Upcoming", include all statuses by default
+            if date_preset in ["All Bookings", "All Upcoming"]:
+                default_statuses = ["Inquiry", "Requested", "Confirmed", "Booked", "Rejected", "Cancelled", "Pending"]
+            else:
+                # For other presets, show only active statuses by default
+                default_statuses = ["Inquiry", "Requested", "Confirmed", "Booked", "Pending"]
+            # Merge with auto-included ones
             default_statuses = list(set(default_statuses) | st.session_state.auto_include_status)
 
         status_filter = st.multiselect(
