@@ -234,18 +234,14 @@ def get_tee_time_from_booking(booking):
 
 
 def get_upcoming_bookings_for_email(days_ahead=None, club_filter=None):
-    """Get bookings that need pre-arrival emails"""
-    if days_ahead is None:
-        days_ahead = EmailConfig.PRE_ARRIVAL_DAYS
-
-    target_date = (datetime.now() + timedelta(days=days_ahead)).date()
-
+    """Get bookings that need pre-arrival emails - now works regardless of date"""
     conn = get_db_connection()
     cursor = conn.cursor(row_factory=dict_row)
 
     # More flexible status filter - accept multiple confirmation statuses
-    where_conditions = ["status IN ('Confirmed', 'Booked', 'Requested', 'Inquiry')", "date = %s"]
-    params = [target_date]
+    # Removed date restriction to allow sending emails regardless of play date
+    where_conditions = ["status IN ('Confirmed', 'Booked', 'Requested', 'Inquiry')"]
+    params = []
 
     if club_filter:
         where_conditions.append("(club = %s OR club IS NULL OR club = '')")
@@ -295,18 +291,14 @@ def get_upcoming_bookings_for_email(days_ahead=None, club_filter=None):
 
 
 def get_recent_bookings_for_email(days_ago=None, club_filter=None):
-    """Get bookings that need post-play emails"""
-    if days_ago is None:
-        days_ago = EmailConfig.POST_PLAY_DAYS
-
-    target_date = (datetime.now() - timedelta(days=days_ago)).date()
-
+    """Get bookings that need post-play emails - now works regardless of date"""
     conn = get_db_connection()
     cursor = conn.cursor(row_factory=dict_row)
 
     # More flexible status filter - accept multiple confirmation statuses
-    where_conditions = ["status IN ('Confirmed', 'Booked', 'Requested', 'Inquiry')", "date = %s"]
-    params = [target_date]
+    # Removed date restriction to allow sending emails regardless of play date
+    where_conditions = ["status IN ('Confirmed', 'Booked', 'Requested', 'Inquiry')"]
+    params = []
 
     if club_filter:
         where_conditions.append("(club = %s OR club IS NULL OR club = '')")
