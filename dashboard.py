@@ -234,18 +234,14 @@ def get_tee_time_from_booking(booking):
 
 
 def get_upcoming_bookings_for_email(days_ahead=None, club_filter=None):
-    """Get bookings that need pre-arrival emails"""
-    if days_ahead is None:
-        days_ahead = EmailConfig.PRE_ARRIVAL_DAYS
-
-    target_date = (datetime.now() + timedelta(days=days_ahead)).date()
-
+    """Get bookings that need pre-arrival emails - now works regardless of date"""
     conn = get_db_connection()
     cursor = conn.cursor(row_factory=dict_row)
 
     # More flexible status filter - accept multiple confirmation statuses
-    where_conditions = ["status IN ('Confirmed', 'Booked', 'Requested', 'Inquiry')", "date = %s"]
-    params = [target_date]
+    # Removed date restriction to allow sending emails regardless of play date
+    where_conditions = ["status IN ('Confirmed', 'Booked', 'Requested', 'Inquiry')"]
+    params = []
 
     if club_filter:
         where_conditions.append("(club = %s OR club IS NULL OR club = '')")
@@ -295,18 +291,14 @@ def get_upcoming_bookings_for_email(days_ahead=None, club_filter=None):
 
 
 def get_recent_bookings_for_email(days_ago=None, club_filter=None):
-    """Get bookings that need post-play emails"""
-    if days_ago is None:
-        days_ago = EmailConfig.POST_PLAY_DAYS
-
-    target_date = (datetime.now() - timedelta(days=days_ago)).date()
-
+    """Get bookings that need post-play emails - now works regardless of date"""
     conn = get_db_connection()
     cursor = conn.cursor(row_factory=dict_row)
 
     # More flexible status filter - accept multiple confirmation statuses
-    where_conditions = ["status IN ('Confirmed', 'Booked', 'Requested', 'Inquiry')", "date = %s"]
-    params = [target_date]
+    # Removed date restriction to allow sending emails regardless of play date
+    where_conditions = ["status IN ('Confirmed', 'Booked', 'Requested', 'Inquiry')"]
+    params = []
 
     if club_filter:
         where_conditions.append("(club = %s OR club IS NULL OR club = '')")
@@ -2101,23 +2093,9 @@ if page == "Bookings":
     
     df, source = load_bookings_from_db('demo')
 
-    # DEBUG: Show raw data count
-    st.info(f"🔍 DEBUG: Loaded {len(df)} total bookings from database (club='demo')")
-    if not df.empty:
-        st.info(f"🔍 DEBUG: Date range in data: {df['date'].min()} to {df['date'].max()}")
-        st.info(f"🔍 DEBUG: Statuses in data: {df['status'].unique().tolist()}")
-        # Check for NULL or NaT dates
-        null_dates = df['date'].isna().sum()
-        if null_dates > 0:
-            st.warning(f"🔍 DEBUG: Found {null_dates} bookings with NULL/NaT dates!")
-
     if df.empty:
         st.warning("No bookings found for club='demo' in database")
         st.stop()
-
-    # DEBUG: Show filter settings
-    st.info(f"🔍 DEBUG: Date range filter: {date_range if date_range else 'None (showing all dates)'}")
-    st.info(f"🔍 DEBUG: Status filter: {status_filter}")
 
     # Create a date-only filtered dataframe for counting "Showing" numbers
     # This ensures the counts reflect bookings within the date range, regardless of status filter
@@ -2131,49 +2109,24 @@ if page == "Bookings":
             # Convert date objects to datetime for comparison
             start_datetime = pd.to_datetime(start_date)
             end_datetime = pd.to_datetime(end_date)
-            st.info(f"🔍 DEBUG: Filtering dates from {start_datetime} to {end_datetime}")
-
-            # Show which bookings are being filtered out
-            before_filter = date_filtered_df['date'] < start_datetime
-            after_filter = date_filtered_df['date'] > end_datetime
-            st.info(f"🔍 DEBUG: {before_filter.sum()} bookings BEFORE start date, {after_filter.sum()} bookings AFTER end date")
-            if before_filter.sum() > 0:
-                st.warning(f"🔍 DEBUG: Dates before filter: {date_filtered_df[before_filter]['date'].tolist()}")
-            if after_filter.sum() > 0:
-                st.warning(f"🔍 DEBUG: Dates after filter: {date_filtered_df[after_filter]['date'].tolist()}")
-
             date_filtered_df = date_filtered_df[
                 (date_filtered_df['date'] >= start_datetime) &
                 (date_filtered_df['date'] <= end_datetime)
             ]
-            st.info(f"🔍 DEBUG: After date filter: {len(date_filtered_df)} bookings")
         elif hasattr(date_range, '__len__') and len(date_range) == 2:
             start_date, end_date = date_range[0], date_range[1]
             # Convert date objects to datetime for comparison
             start_datetime = pd.to_datetime(start_date)
             end_datetime = pd.to_datetime(end_date)
-            st.info(f"🔍 DEBUG: Filtering dates from {start_datetime} to {end_datetime}")
-
-            # Show which bookings are being filtered out
-            before_filter = date_filtered_df['date'] < start_datetime
-            after_filter = date_filtered_df['date'] > end_datetime
-            st.info(f"🔍 DEBUG: {before_filter.sum()} bookings BEFORE start date, {after_filter.sum()} bookings AFTER end date")
-            if before_filter.sum() > 0:
-                st.warning(f"🔍 DEBUG: Dates before filter: {date_filtered_df[before_filter]['date'].tolist()}")
-            if after_filter.sum() > 0:
-                st.warning(f"🔍 DEBUG: Dates after filter: {date_filtered_df[after_filter]['date'].tolist()}")
-
             date_filtered_df = date_filtered_df[
                 (date_filtered_df['date'] >= start_datetime) &
                 (date_filtered_df['date'] <= end_datetime)
             ]
-            st.info(f"🔍 DEBUG: After date filter: {len(date_filtered_df)} bookings")
 
     # Create the fully filtered dataframe (by both status and date) for displaying bookings
     filtered_df = date_filtered_df.copy()
     if status_filter:
         filtered_df = filtered_df[filtered_df['status'].isin(status_filter)]
-        st.info(f"🔍 DEBUG: After status filter: {len(filtered_df)} bookings")
 
     col1, col2, col3, col4 = st.columns(4)
 
@@ -2228,16 +2181,34 @@ if page == "Bookings":
     else:
         date_str = "all dates"
     
+    # Search bar
+    search_term = st.text_input(
+        "🔍 Search bookings",
+        placeholder="Search by name, email, booking ID, golf course...",
+        key="booking_search"
+    )
+
+    # Apply search filter
+    if search_term:
+        search_lower = search_term.lower()
+        filtered_df = filtered_df[
+            filtered_df['guest_email'].astype(str).str.lower().str.contains(search_lower, na=False) |
+            filtered_df['guest_name'].astype(str).str.lower().str.contains(search_lower, na=False) |
+            filtered_df['booking_id'].astype(str).str.lower().str.contains(search_lower, na=False) |
+            filtered_df.get('golf_courses', pd.Series(dtype=str)).astype(str).str.lower().str.contains(search_lower, na=False) |
+            filtered_df.get('note', pd.Series(dtype=str)).astype(str).str.lower().str.contains(search_lower, na=False)
+        ]
+
     st.markdown(f"""
         <div style='margin-bottom: 1.5rem;'>
             <h3 style='color: #f9fafb; font-weight: 600; font-size: 1.125rem;'>{len(filtered_df)} Active Requests</h3>
             <p style='color: #64748b; font-size: 0.875rem; margin-top: 0.25rem;'>Showing bookings from {date_str}</p>
         </div>
     """, unsafe_allow_html=True)
-    
+
     # Add visual separator
     st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
-    
+
     # ========================================
     # BOOKING CARDS - ENHANCED VERSION
     # ========================================
