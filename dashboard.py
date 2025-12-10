@@ -2110,7 +2110,11 @@ if page == "Bookings":
     if df.empty:
         st.warning("No bookings found for club='demo' in database")
         st.stop()
-    
+
+    # DEBUG: Show filter settings
+    st.info(f"🔍 DEBUG: Date range filter: {date_range}")
+    st.info(f"🔍 DEBUG: Status filter: {status_filter}")
+
     # Create a date-only filtered dataframe for counting "Showing" numbers
     # This ensures the counts reflect bookings within the date range, regardless of status filter
     date_filtered_df = df.copy()
@@ -2122,24 +2126,29 @@ if page == "Bookings":
             # Convert date objects to datetime for comparison
             start_datetime = pd.to_datetime(start_date)
             end_datetime = pd.to_datetime(end_date)
+            st.info(f"🔍 DEBUG: Filtering dates from {start_datetime} to {end_datetime}")
             date_filtered_df = date_filtered_df[
                 (date_filtered_df['date'] >= start_datetime) &
                 (date_filtered_df['date'] <= end_datetime)
             ]
+            st.info(f"🔍 DEBUG: After date filter: {len(date_filtered_df)} bookings")
         elif hasattr(date_range, '__len__') and len(date_range) == 2:
             start_date, end_date = date_range[0], date_range[1]
             # Convert date objects to datetime for comparison
             start_datetime = pd.to_datetime(start_date)
             end_datetime = pd.to_datetime(end_date)
+            st.info(f"🔍 DEBUG: Filtering dates from {start_datetime} to {end_datetime}")
             date_filtered_df = date_filtered_df[
                 (date_filtered_df['date'] >= start_datetime) &
                 (date_filtered_df['date'] <= end_datetime)
             ]
+            st.info(f"🔍 DEBUG: After date filter: {len(date_filtered_df)} bookings")
 
     # Create the fully filtered dataframe (by both status and date) for displaying bookings
     filtered_df = date_filtered_df.copy()
     if status_filter:
         filtered_df = filtered_df[filtered_df['status'].isin(status_filter)]
+        st.info(f"🔍 DEBUG: After status filter: {len(filtered_df)} bookings")
 
     col1, col2, col3, col4 = st.columns(4)
 
