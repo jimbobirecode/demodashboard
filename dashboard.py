@@ -2106,65 +2106,70 @@ if page == "Bookings":
         st.warning("No bookings found for club='demo' in database")
         st.stop()
     
-    filtered_df = df.copy()
-    if status_filter:
-        filtered_df = filtered_df[filtered_df['status'].isin(status_filter)]
-    
-    # Handle date range filtering
+    # Create a date-only filtered dataframe for counting "Showing" numbers
+    # This ensures the counts reflect bookings within the date range, regardless of status filter
+    date_filtered_df = df.copy()
+
+    # Handle date range filtering for date_filtered_df
     if date_range:
         if isinstance(date_range, tuple) and len(date_range) == 2:
             start_date, end_date = date_range
             # Convert date objects to datetime for comparison
             start_datetime = pd.to_datetime(start_date)
             end_datetime = pd.to_datetime(end_date)
-            filtered_df = filtered_df[
-                (filtered_df['date'] >= start_datetime) &
-                (filtered_df['date'] <= end_datetime)
+            date_filtered_df = date_filtered_df[
+                (date_filtered_df['date'] >= start_datetime) &
+                (date_filtered_df['date'] <= end_datetime)
             ]
         elif hasattr(date_range, '__len__') and len(date_range) == 2:
             start_date, end_date = date_range[0], date_range[1]
             # Convert date objects to datetime for comparison
             start_datetime = pd.to_datetime(start_date)
             end_datetime = pd.to_datetime(end_date)
-            filtered_df = filtered_df[
-                (filtered_df['date'] >= start_datetime) &
-                (filtered_df['date'] <= end_datetime)
+            date_filtered_df = date_filtered_df[
+                (date_filtered_df['date'] >= start_datetime) &
+                (date_filtered_df['date'] <= end_datetime)
             ]
-    
+
+    # Create the fully filtered dataframe (by both status and date) for displaying bookings
+    filtered_df = date_filtered_df.copy()
+    if status_filter:
+        filtered_df = filtered_df[filtered_df['status'].isin(status_filter)]
+
     col1, col2, col3, col4 = st.columns(4)
-    
-    # Calculate counts for all statuses (before filtering)
+
+    # Calculate counts for all statuses (before any filtering)
     all_inquiry_count = len(df[df['status'].isin(['Inquiry', 'Pending'])])
     all_requested_count = len(df[df['status'] == 'Requested'])
     all_confirmed_count = len(df[df['status'] == 'Confirmed'])
     all_booked_count = len(df[df['status'] == 'Booked'])
-    
+
     with col1:
-        inquiry_count = len(filtered_df[filtered_df['status'].isin(['Inquiry', 'Pending'])])
+        inquiry_count = len(date_filtered_df[date_filtered_df['status'].isin(['Inquiry', 'Pending'])])
         if st.button(f"Inquiry\n{all_inquiry_count}", key="filter_inquiry", use_container_width=True, help="Click to filter Inquiry status"):
             st.session_state.clicked_status_filter = "Inquiry+Pending"
             st.cache_data.clear()
             st.rerun()
         st.markdown(f"<div style='text-align: center; color: #ffffff; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {inquiry_count}</div>", unsafe_allow_html=True)
-    
+
     with col2:
-        requested_count = len(filtered_df[filtered_df['status'] == 'Requested'])
+        requested_count = len(date_filtered_df[date_filtered_df['status'] == 'Requested'])
         if st.button(f"Requested\n{all_requested_count}", key="filter_requested", use_container_width=True, help="Click to filter Requested status"):
             st.session_state.clicked_status_filter = "Requested"
             st.cache_data.clear()
             st.rerun()
         st.markdown(f"<div style='text-align: center; color: #ffffff; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {requested_count}</div>", unsafe_allow_html=True)
-    
+
     with col3:
-        confirmed_count = len(filtered_df[filtered_df['status'] == 'Confirmed'])
+        confirmed_count = len(date_filtered_df[date_filtered_df['status'] == 'Confirmed'])
         if st.button(f"Confirmed\n{all_confirmed_count}", key="filter_confirmed", use_container_width=True, help="Click to filter Confirmed status"):
             st.session_state.clicked_status_filter = "Confirmed"
             st.cache_data.clear()
             st.rerun()
         st.markdown(f"<div style='text-align: center; color: #ffffff; font-size: 0.75rem; margin-top: -0.5rem;'>Showing: {confirmed_count}</div>", unsafe_allow_html=True)
-    
+
     with col4:
-        booked_count = len(filtered_df[filtered_df['status'] == 'Booked'])
+        booked_count = len(date_filtered_df[date_filtered_df['status'] == 'Booked'])
         if st.button(f"Booked\n{all_booked_count}", key="filter_booked", use_container_width=True, help="Click to filter Booked status"):
             st.session_state.clicked_status_filter = "Booked"
             st.cache_data.clear()
