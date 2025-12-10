@@ -2016,7 +2016,7 @@ with st.sidebar:
 
         # Calculate date range based on preset
         if date_preset == "All Bookings":
-            date_range = (datetime.now().date() - timedelta(days=365), datetime.now().date() + timedelta(days=365))
+            date_range = None  # Show all bookings including those with NULL dates
         elif date_preset == "Past 30 Days":
             date_range = (datetime.now().date() - timedelta(days=30), datetime.now().date())
         elif date_preset == "Past 7 Days":
@@ -2032,7 +2032,7 @@ with st.sidebar:
         elif date_preset == "Next 90 Days":
             date_range = (datetime.now().date(), datetime.now().date() + timedelta(days=90))
         elif date_preset == "All Upcoming":
-            date_range = (datetime.now().date(), datetime.now().date() + timedelta(days=365))
+            date_range = None  # Show all upcoming bookings including those with NULL dates
         else:  # Custom
             date_range = st.date_input(
                 "Custom Date Range",
@@ -2116,7 +2116,7 @@ if page == "Bookings":
         st.stop()
 
     # DEBUG: Show filter settings
-    st.info(f"🔍 DEBUG: Date range filter: {date_range}")
+    st.info(f"🔍 DEBUG: Date range filter: {date_range if date_range else 'None (showing all dates)'}")
     st.info(f"🔍 DEBUG: Status filter: {status_filter}")
 
     # Create a date-only filtered dataframe for counting "Showing" numbers
@@ -2124,7 +2124,8 @@ if page == "Bookings":
     date_filtered_df = df.copy()
 
     # Handle date range filtering for date_filtered_df
-    if date_range:
+    # Skip date filtering if date_range is None (for "All Bookings" and "All Upcoming")
+    if date_range and date_range is not None:
         if isinstance(date_range, tuple) and len(date_range) == 2:
             start_date, end_date = date_range
             # Convert date objects to datetime for comparison
