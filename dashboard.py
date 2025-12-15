@@ -1793,60 +1793,42 @@ def convert_waitlist_to_booking(waitlist_entry, tee_time, total_amount=0):
 
 
 # ========================================
-# GUEST EMAILS (INBOUND EMAILS) FUNCTIONS
+# INBOUND EMAILS FUNCTIONS
 # ========================================
-def load_guest_emails_from_db(club_filter, limit=100):
-    """Load guest emails (inbound emails) from database"""
+def load_emails_by_booking_id(booking_id):
+    """Load inbound emails for a specific booking"""
     try:
         conn = get_db_connection()
         cursor = conn.cursor(row_factory=dict_row)
 
         cursor.execute("""
-            SELECT * FROM guest_emails
-            WHERE to_email LIKE %s
+            SELECT * FROM inbound_emails
+            WHERE booking_id = %s
             ORDER BY received_at DESC
-            LIMIT %s
-        """, (f"%{club_filter}%", limit))
+        """, (booking_id,))
 
         emails = cursor.fetchall()
         cursor.close()
         conn.close()
 
         if not emails:
-            return pd.DataFrame()
+            return []
 
-        df = pd.DataFrame(emails)
+        # Convert to list of dicts and format dates
+        result = []
+        for email in emails:
+            email_dict = dict(email)
+            # Convert timestamp columns to formatted strings
+            if 'received_at' in email_dict and email_dict['received_at']:
+                email_dict['received_at_formatted'] = email_dict['received_at'].strftime('%b %d, %Y %I:%M %p')
+            else:
+                email_dict['received_at_formatted'] = 'N/A'
+            result.append(email_dict)
 
-        # Convert date columns
-        for col in ['received_at', 'created_at', 'last_retry_at']:
-            if col in df.columns:
-                df[col] = pd.to_datetime(df[col], errors='coerce')
-
-        return df
+        return result
     except Exception as e:
-        st.error(f"Error loading guest emails: {e}")
-        return pd.DataFrame()
-
-
-def update_email_processed_status(message_id, processed=True):
-    """Mark an email as processed or unprocessed"""
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            UPDATE guest_emails
-            SET processed = %s
-            WHERE message_id = %s
-        """, (processed, message_id))
-
-        conn.commit()
-        cursor.close()
-        conn.close()
-        return True
-    except Exception as e:
-        st.error(f"Error updating email status: {e}")
-        return False
+        st.error(f"Error loading emails: {e}")
+        return []
 
 
 # ========================================
@@ -2026,7 +2008,7 @@ with st.sidebar:
     if 'current_page' not in st.session_state:
         st.session_state.current_page = "Bookings"
 
-    nav_options = ["Bookings", "Waitlist", "Inbound Emails", "Reports & Analytics", "Marketing Segmentation", "Email Automation", "Notify Integration"]
+    nav_options = ["Bookings", "Waitlist", "Reports & Analytics", "Marketing Segmentation", "Email Automation", "Notify Integration"]
     current_index = nav_options.index(st.session_state.current_page) if st.session_state.current_page in nav_options else 0
 
     page = st.radio(
@@ -2451,7 +2433,91 @@ if page == "Bookings":
                                 <div style='color: #f7f5f2; font-size: 0.875rem; margin-top: 0.25rem;'>{booking['updated_at'].strftime('%b %d, %Y • %I:%M %p')} by {booking['updated_by']}</div>
                             </div>
                         """, unsafe_allow_html=True)
-                
+
+                    # Display inbound emails for this booking
+                    st.markdown("""
+                        <div style='background: #4a6278; padding: 0.75rem 1rem; border-radius: 8px 8px 0 0; border: 2px solid #6b7c3f; border-bottom: none; margin-top: 1.5rem; margin-bottom: 0;'>
+                            <div style='color: #d4b896; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;'>Inbound Emails</div>
+                        </div>
+                    """, unsafe_allow_html=True)
+
+                    emails = load_emails_by_booking_id(booking['booking_id'])
+
+                    if not emails:
+                        st.markdown("""
+                            <div style='background: #3d5266; padding: 1rem; border: 2px solid #6b7c3f; border-top: none; border-radius: 0 0 8px 8px;'>
+                                <div style='color: #94a3b8; font-size: 0.875rem; text-align: center;'>No emails found for this booking</div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    else:
+                        st.markdown(f"""
+                            <div style='background: #3d5266; padding: 1rem; border: 2px solid #6b7c3f; border-top: none; border-radius: 0 0 8px 8px;'>
+                                <div style='color: #10b981; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem;'>{len(emails)} email(s) found</div>
+                        """, unsafe_allow_html=True)
+
+                        for email in emails:
+                            # Determine status color and text
+                            if email.get('processed'):
+                                status_color = '#10b981'
+                                status_text = 'Processed'
+                            elif email.get('error_message'):
+                                status_color = '#ef4444'
+                                status_text = 'Error'
+                            else:
+                                status_color = '#fbbf24'
+                                status_text = 'Unprocessed'
+
+                            # Email type color
+                            email_type = email.get('email_type', 'unknown')
+                            email_type_color = {
+                                'inquiry': '#3b82f6',
+                                'booking_request': '#8b5cf6',
+                                'staff_confirmation': '#10b981',
+                                'waitlist_optin': '#f59e0b',
+                                'customer_reply': '#6366f1'
+                            }.get(email_type, '#64748b')
+
+                            subject = html.escape(str(email.get('subject', 'No Subject')))
+                            from_email = html.escape(str(email.get('from_email', 'N/A')))
+                            received_at = email.get('received_at_formatted', 'N/A')
+
+                            st.markdown(f"""
+                                <div style='background: #2d3e50; padding: 0.75rem; border-radius: 6px; margin-bottom: 0.5rem; border-left: 3px solid {status_color};'>
+                                    <div style='display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;'>
+                                        <div style='flex: 1;'>
+                                            <div style='color: #f9fafb; font-weight: 600; font-size: 0.875rem;'>{subject}</div>
+                                            <div style='color: #3b82f6; font-size: 0.75rem; margin-top: 0.25rem;'>From: {from_email}</div>
+                                        </div>
+                                    </div>
+                                    <div style='display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;'>
+                                        <div style='background: {email_type_color}20; border: 1px solid {email_type_color}; color: {email_type_color}; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.65rem; text-transform: uppercase;'>
+                                            {email_type}
+                                        </div>
+                                        <div style='background: {status_color}20; border: 1px solid {status_color}; color: {status_color}; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.65rem; text-transform: uppercase;'>
+                                            {status_text}
+                                        </div>
+                                        <div style='color: #64748b; font-size: 0.7rem; margin-left: auto;'>{received_at}</div>
+                                    </div>
+                                </div>
+                            """, unsafe_allow_html=True)
+
+                            # Show email body in expander
+                            with st.expander(f"📧 Email details", expanded=False, key=f"email_{email.get('id', '')}_{booking['booking_id']}"):
+                                body_text = email.get('body_text', 'No body text available')
+                                st.text_area("Email Body", value=body_text, height=150, disabled=True, key=f"email_body_{email.get('id', '')}_{booking['booking_id']}")
+
+                                if email.get('error_message'):
+                                    st.error(f"Error: {email.get('error_message')}")
+
+                                col_email1, col_email2 = st.columns(2)
+                                with col_email1:
+                                    st.caption(f"Message ID: {email.get('message_id', 'N/A')[:30]}...")
+                                with col_email2:
+                                    if email.get('processing_status'):
+                                        st.caption(f"Status: {email.get('processing_status')}")
+
+                        st.markdown("</div>", unsafe_allow_html=True)
+
                 with detail_col2:
                     st.markdown("### Quick Actions")
     
@@ -3317,218 +3383,6 @@ elif page == "Waitlist":
                     """, unsafe_allow_html=True)
             else:
                 st.info("No matching waitlist entries for this date")
-
-
-# ========================================
-# INBOUND EMAILS VIEW
-# ========================================
-elif page == "Inbound Emails":
-    st.markdown("""
-        <h2 style='margin-bottom: 0.5rem;'>Inbound Emails</h2>
-        <p style='color: #ffffff; margin-bottom: 1.5rem; font-size: 0.9375rem;'>Monitor and manage all incoming emails from guests</p>
-    """, unsafe_allow_html=True)
-
-    # Load inbound emails data
-    emails_df = load_guest_emails_from_db(st.session_state.customer_id)
-
-    # Email stats
-    col_em1, col_em2, col_em3, col_em4 = st.columns(4)
-
-    with col_em1:
-        total_count = len(emails_df) if not emails_df.empty else 0
-        st.markdown(f"""
-            <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center;'>
-                <div style='color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;'>Total Emails</div>
-                <div style='color: #fbbf24; font-size: 2.5rem; font-weight: 700;'>{total_count}</div>
-            </div>
-        """, unsafe_allow_html=True)
-
-    with col_em2:
-        unprocessed_count = len(emails_df[emails_df['processed'] == False]) if not emails_df.empty and 'processed' in emails_df.columns else 0
-        st.markdown(f"""
-            <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center;'>
-                <div style='color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;'>Unprocessed</div>
-                <div style='color: #ef4444; font-size: 2.5rem; font-weight: 700;'>{unprocessed_count}</div>
-            </div>
-        """, unsafe_allow_html=True)
-
-    with col_em3:
-        processed_count = len(emails_df[emails_df['processed'] == True]) if not emails_df.empty and 'processed' in emails_df.columns else 0
-        st.markdown(f"""
-            <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center;'>
-                <div style='color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;'>Processed</div>
-                <div style='color: #10b981; font-size: 2.5rem; font-weight: 700;'>{processed_count}</div>
-            </div>
-        """, unsafe_allow_html=True)
-
-    with col_em4:
-        error_count = len(emails_df[emails_df['error_message'].notna()]) if not emails_df.empty and 'error_message' in emails_df.columns else 0
-        st.markdown(f"""
-            <div style='background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; text-align: center;'>
-                <div style='color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;'>Errors</div>
-                <div style='color: #fbbf24; font-size: 2.5rem; font-weight: 700;'>{error_count}</div>
-            </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("<div style='height: 2px; background: #3b82f6; margin: 2rem 0;'></div>", unsafe_allow_html=True)
-
-    # Filters
-    st.markdown("### Filters")
-    col_filter1, col_filter2, col_filter3 = st.columns(3)
-
-    with col_filter1:
-        # Email type filter
-        email_types = []
-        if not emails_df.empty and 'email_type' in emails_df.columns:
-            email_types = emails_df['email_type'].dropna().unique().tolist()
-
-        type_filter = st.multiselect(
-            "Filter by Email Type",
-            email_types if email_types else ["inquiry", "booking_request", "staff_confirmation", "waitlist_optin", "customer_reply"],
-            default=[],
-            key="email_type_filter"
-        )
-
-    with col_filter2:
-        # Processed status filter
-        status_filter = st.selectbox(
-            "Filter by Status",
-            ["All", "Unprocessed", "Processed", "With Errors"],
-            key="email_status_filter"
-        )
-
-    with col_filter3:
-        # Search functionality
-        search_query = st.text_input("Search (subject, from, body)", key="email_search", placeholder="Type to search...")
-
-    st.markdown("<div style='height: 2px; background: #3b82f6; margin: 2rem 0;'></div>", unsafe_allow_html=True)
-
-    # Email List
-    st.markdown("### Email Messages")
-
-    if emails_df.empty:
-        st.info("No inbound emails found.")
-    else:
-        # Apply filters
-        filtered_emails = emails_df.copy()
-
-        # Filter by type
-        if type_filter and 'email_type' in filtered_emails.columns:
-            filtered_emails = filtered_emails[filtered_emails['email_type'].isin(type_filter)]
-
-        # Filter by status
-        if status_filter == "Unprocessed" and 'processed' in filtered_emails.columns:
-            filtered_emails = filtered_emails[filtered_emails['processed'] == False]
-        elif status_filter == "Processed" and 'processed' in filtered_emails.columns:
-            filtered_emails = filtered_emails[filtered_emails['processed'] == True]
-        elif status_filter == "With Errors" and 'error_message' in filtered_emails.columns:
-            filtered_emails = filtered_emails[filtered_emails['error_message'].notna()]
-
-        # Search filter
-        if search_query:
-            search_lower = search_query.lower()
-            mask = (
-                filtered_emails['subject'].fillna('').str.lower().str.contains(search_lower) |
-                filtered_emails['from_email'].fillna('').str.lower().str.contains(search_lower) |
-                filtered_emails['body_text'].fillna('').str.lower().str.contains(search_lower)
-            )
-            filtered_emails = filtered_emails[mask]
-
-        if filtered_emails.empty:
-            st.info("No emails match the current filters.")
-        else:
-            st.markdown(f"**Showing {len(filtered_emails)} email(s)**")
-
-            for _, email in filtered_emails.iterrows():
-                # Determine status color
-                if 'processed' in email and email['processed']:
-                    status_color = '#10b981'
-                    status_text = 'Processed'
-                elif 'error_message' in email and pd.notna(email['error_message']):
-                    status_color = '#ef4444'
-                    status_text = 'Error'
-                else:
-                    status_color = '#fbbf24'
-                    status_text = 'Unprocessed'
-
-                # Format dates
-                received_at = email['received_at'].strftime('%b %d, %Y %I:%M %p') if pd.notna(email.get('received_at')) else 'N/A'
-
-                # Email type badge
-                email_type = email.get('email_type', 'unknown')
-                email_type_color = {
-                    'inquiry': '#3b82f6',
-                    'booking_request': '#8b5cf6',
-                    'staff_confirmation': '#10b981',
-                    'waitlist_optin': '#f59e0b',
-                    'customer_reply': '#6366f1'
-                }.get(email_type, '#64748b')
-
-                st.markdown(f"""
-                    <div style='background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem;'>
-                        <div style='display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;'>
-                            <div style='flex: 1;'>
-                                <div style='color: #f9fafb; font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem;'>{email.get('subject', 'No Subject')}</div>
-                                <div style='color: #3b82f6; font-size: 0.875rem; margin-bottom: 0.25rem;'>From: {email.get('from_email', 'N/A')}</div>
-                                <div style='color: #64748b; font-size: 0.75rem;'>To: {email.get('to_email', 'N/A')}</div>
-                            </div>
-                            <div style='display: flex; gap: 0.5rem; align-items: center;'>
-                                <div style='background: {email_type_color}20; border: 2px solid {email_type_color}; color: {email_type_color}; padding: 0.375rem 0.75rem; border-radius: 6px; font-weight: 600; font-size: 0.7rem; text-transform: uppercase;'>
-                                    {email_type}
-                                </div>
-                                <div style='background: {status_color}20; border: 2px solid {status_color}; color: {status_color}; padding: 0.375rem 0.75rem; border-radius: 6px; font-weight: 600; font-size: 0.7rem; text-transform: uppercase;'>
-                                    {status_text}
-                                </div>
-                            </div>
-                        </div>
-                        <div style='color: #64748b; font-size: 0.75rem; margin-bottom: 0.75rem;'>
-                            Received: {received_at}
-                        </div>
-                    </div>
-                """, unsafe_allow_html=True)
-
-                # Email body preview and actions
-                with st.expander(f"View Details - {email.get('message_id', 'N/A')[:20]}..."):
-                    # Display body
-                    st.markdown("**Email Body:**")
-                    body_text = email.get('body_text', 'No body text available')
-                    st.text_area("", value=body_text, height=200, disabled=True, key=f"body_{email.get('message_id', '')}")
-
-                    # Show additional details
-                    col_det1, col_det2 = st.columns(2)
-
-                    with col_det1:
-                        st.markdown(f"**Message ID:** `{email.get('message_id', 'N/A')}`")
-                        if 'booking_id' in email and pd.notna(email['booking_id']):
-                            st.markdown(f"**Linked Booking:** `{email['booking_id']}`")
-                        if 'waitlist_id' in email and pd.notna(email['waitlist_id']):
-                            st.markdown(f"**Linked Waitlist:** `{email['waitlist_id']}`")
-
-                    with col_det2:
-                        if 'retry_count' in email and email['retry_count'] > 0:
-                            st.markdown(f"**Retry Count:** {email['retry_count']}")
-                        if 'error_message' in email and pd.notna(email['error_message']):
-                            st.markdown(f"**Error:** {email['error_message']}")
-
-                    # Action buttons
-                    col_action1, col_action2 = st.columns(2)
-
-                    message_id = email.get('message_id')
-                    is_processed = email.get('processed', False)
-
-                    with col_action1:
-                        if not is_processed:
-                            if st.button("Mark as Processed", key=f"process_{message_id}", use_container_width=True):
-                                if update_email_processed_status(message_id, True):
-                                    st.success("Email marked as processed")
-                                    st.rerun()
-
-                    with col_action2:
-                        if is_processed:
-                            if st.button("Mark as Unprocessed", key=f"unprocess_{message_id}", use_container_width=True):
-                                if update_email_processed_status(message_id, False):
-                                    st.success("Email marked as unprocessed")
-                                    st.rerun()
 
 
 # ========================================
