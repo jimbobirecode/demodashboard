@@ -2516,20 +2516,32 @@ if page == "Bookings":
                                 </div>
                             """, unsafe_allow_html=True)
 
-                            # Show email body in expander
-                            with st.expander(f"📧 Email details - {received_at}", expanded=False):
-                                body_text = email.get('body_text', 'No body text available')
-                                st.text_area("Email Body", value=body_text, height=150, disabled=True, key=f"email_body_{booking['booking_id']}_{email_idx}")
+                            # Show email body details (no expander since we're already inside one)
+                            body_text = email.get('body_text', 'No body text available')
 
-                                if email.get('error_message'):
-                                    st.error(f"Error: {email.get('error_message')}")
+                            # Show metadata
+                            col_email1, col_email2 = st.columns(2)
+                            with col_email1:
+                                st.caption(f"📧 Message ID: {email.get('message_id', 'N/A')[:30]}...")
+                            with col_email2:
+                                if email.get('processing_status'):
+                                    st.caption(f"📊 Status: {email.get('processing_status')}")
 
-                                col_email1, col_email2 = st.columns(2)
-                                with col_email1:
-                                    st.caption(f"Message ID: {email.get('message_id', 'N/A')[:30]}...")
-                                with col_email2:
-                                    if email.get('processing_status'):
-                                        st.caption(f"Status: {email.get('processing_status')}")
+                            # Show email body in collapsed text area
+                            st.text_area(
+                                "Email Body",
+                                value=body_text,
+                                height=100,
+                                disabled=True,
+                                key=f"email_body_{booking['booking_id']}_{email_idx}",
+                                label_visibility="collapsed"
+                            )
+
+                            if email.get('error_message'):
+                                st.error(f"⚠️ Error: {email.get('error_message')}")
+
+                            # Add spacing between emails
+                            st.markdown("<div style='height: 0.5rem;'></div>", unsafe_allow_html=True)
 
                         st.markdown("</div>", unsafe_allow_html=True)
 
