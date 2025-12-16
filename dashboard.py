@@ -1795,17 +1795,32 @@ def convert_waitlist_to_booking(waitlist_entry, tee_time, total_amount=0):
 # ========================================
 # INBOUND EMAILS FUNCTIONS
 # ========================================
-def load_emails_by_booking_id(booking_id):
-    """Load inbound emails for a specific booking"""
+def load_emails_by_booking_id(booking_id, guest_email=None):
+    """Load inbound emails for a specific booking
+
+    Matches emails by:
+    1. booking_id field (if populated)
+    2. from_email matching guest_email (for emails not yet linked)
+    """
     try:
         conn = get_db_connection()
         cursor = conn.cursor(row_factory=dict_row)
 
-        cursor.execute("""
-            SELECT * FROM inbound_emails
-            WHERE booking_id = %s
-            ORDER BY received_at DESC
-        """, (booking_id,))
+        # Query emails that either have the booking_id OR match the guest email
+        if guest_email:
+            cursor.execute("""
+                SELECT * FROM inbound_emails
+                WHERE booking_id = %s
+                   OR (booking_id IS NULL AND from_email ILIKE %s)
+                   OR (booking_id IS NULL AND to_email ILIKE %s)
+                ORDER BY received_at DESC
+            """, (booking_id, f"%{guest_email}%", f"%{guest_email}%"))
+        else:
+            cursor.execute("""
+                SELECT * FROM inbound_emails
+                WHERE booking_id = %s
+                ORDER BY received_at DESC
+            """, (booking_id,))
 
         emails = cursor.fetchall()
         cursor.close()
@@ -2441,7 +2456,7 @@ if page == "Bookings":
                         </div>
                     """, unsafe_allow_html=True)
 
-                    emails = load_emails_by_booking_id(booking['booking_id'])
+                    emails = load_emails_by_booking_id(booking['booking_id'], booking.get('guest_email'))
 
                     if not emails:
                         st.markdown("""
