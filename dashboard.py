@@ -2517,15 +2517,18 @@ if page == "Bookings":
                             """, unsafe_allow_html=True)
 
                             # Show email body details (no expander since we're already inside one)
-                            body_text = email.get('body_text', 'No body text available')
+                            body_text = email.get('body_text') or 'No body text available'
 
                             # Show metadata
                             col_email1, col_email2 = st.columns(2)
                             with col_email1:
-                                st.caption(f"📧 Message ID: {email.get('message_id', 'N/A')[:30]}...")
+                                message_id = email.get('message_id') or 'N/A'
+                                display_id = message_id[:30] if len(message_id) > 30 else message_id
+                                st.caption(f"📧 Message ID: {display_id}...")
                             with col_email2:
-                                if email.get('processing_status'):
-                                    st.caption(f"📊 Status: {email.get('processing_status')}")
+                                processing_status = email.get('processing_status')
+                                if processing_status:
+                                    st.caption(f"📊 Status: {processing_status}")
 
                             # Show email body in collapsed text area
                             st.text_area(
