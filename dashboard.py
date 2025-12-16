@@ -1807,13 +1807,14 @@ def load_emails_by_booking_id(booking_id, guest_email=None):
         cursor = conn.cursor(row_factory=dict_row)
 
         # Query emails that either have the booking_id OR match the guest email
+        # Use DISTINCT to prevent duplicates
         if guest_email:
             cursor.execute("""
-                SELECT * FROM inbound_emails
+                SELECT DISTINCT ON (id) * FROM inbound_emails
                 WHERE booking_id = %s
                    OR (booking_id IS NULL AND from_email ILIKE %s)
                    OR (booking_id IS NULL AND to_email ILIKE %s)
-                ORDER BY received_at DESC
+                ORDER BY id, received_at DESC
             """, (booking_id, f"%{guest_email}%", f"%{guest_email}%"))
         else:
             cursor.execute("""
@@ -2471,80 +2472,37 @@ if page == "Bookings":
                         """, unsafe_allow_html=True)
 
                         for email_idx, email in enumerate(emails):
-                            # Determine status color and text
+                            # Determine status indicator
                             if email.get('processed'):
+                                status_icon = '✓'
                                 status_color = '#10b981'
-                                status_text = 'Processed'
                             elif email.get('error_message'):
+                                status_icon = '✗'
                                 status_color = '#ef4444'
-                                status_text = 'Error'
                             else:
+                                status_icon = '○'
                                 status_color = '#fbbf24'
-                                status_text = 'Unprocessed'
 
-                            # Email type color
-                            email_type = email.get('email_type', 'unknown')
-                            email_type_color = {
-                                'inquiry': '#3b82f6',
-                                'booking_request': '#8b5cf6',
-                                'staff_confirmation': '#10b981',
-                                'waitlist_optin': '#f59e0b',
-                                'customer_reply': '#6366f1'
-                            }.get(email_type, '#64748b')
-
-                            subject = html.escape(str(email.get('subject', 'No Subject')))
-                            from_email = html.escape(str(email.get('from_email', 'N/A')))
+                            subject = html.escape(str(email.get('subject') or '(No Subject)'))
+                            from_email = html.escape(str(email.get('from_email') or 'Unknown'))
                             received_at = email.get('received_at_formatted', 'N/A')
 
+                            # Get preview of body (first 60 chars)
+                            body_preview = (email.get('body_text') or '')[:60].replace('\n', ' ').strip()
+                            if len(body_preview) == 60:
+                                body_preview += '...'
+
                             st.markdown(f"""
-                                <div style='background: #2d3e50; padding: 0.75rem; border-radius: 6px; margin-bottom: 0.5rem; border-left: 3px solid {status_color};'>
-                                    <div style='display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;'>
-                                        <div style='flex: 1;'>
-                                            <div style='color: #f9fafb; font-weight: 600; font-size: 0.875rem;'>{subject}</div>
-                                            <div style='color: #3b82f6; font-size: 0.75rem; margin-top: 0.25rem;'>From: {from_email}</div>
+                                <div style='background: #2d3e50; padding: 0.5rem 0.75rem; border-radius: 4px; margin-bottom: 0.35rem; border-left: 3px solid {status_color};'>
+                                    <div style='display: flex; align-items: center; gap: 0.5rem;'>
+                                        <span style='color: {status_color}; font-weight: bold; font-size: 1rem;'>{status_icon}</span>
+                                        <div style='flex: 1; min-width: 0;'>
+                                            <div style='color: #f9fafb; font-weight: 600; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>{subject}</div>
+                                            <div style='color: #94a3b8; font-size: 0.7rem; margin-top: 0.15rem;'>{from_email} • {received_at}</div>
                                         </div>
-                                    </div>
-                                    <div style='display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;'>
-                                        <div style='background: {email_type_color}20; border: 1px solid {email_type_color}; color: {email_type_color}; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.65rem; text-transform: uppercase;'>
-                                            {email_type}
-                                        </div>
-                                        <div style='background: {status_color}20; border: 1px solid {status_color}; color: {status_color}; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.65rem; text-transform: uppercase;'>
-                                            {status_text}
-                                        </div>
-                                        <div style='color: #64748b; font-size: 0.7rem; margin-left: auto;'>{received_at}</div>
                                     </div>
                                 </div>
                             """, unsafe_allow_html=True)
-
-                            # Show email body details (no expander since we're already inside one)
-                            body_text = email.get('body_text') or 'No body text available'
-
-                            # Show metadata
-                            col_email1, col_email2 = st.columns(2)
-                            with col_email1:
-                                message_id = email.get('message_id') or 'N/A'
-                                display_id = message_id[:30] if len(message_id) > 30 else message_id
-                                st.caption(f"📧 Message ID: {display_id}...")
-                            with col_email2:
-                                processing_status = email.get('processing_status')
-                                if processing_status:
-                                    st.caption(f"📊 Status: {processing_status}")
-
-                            # Show email body in collapsed text area
-                            st.text_area(
-                                "Email Body",
-                                value=body_text,
-                                height=100,
-                                disabled=True,
-                                key=f"email_body_{booking['booking_id']}_{email_idx}",
-                                label_visibility="collapsed"
-                            )
-
-                            if email.get('error_message'):
-                                st.error(f"⚠️ Error: {email.get('error_message')}")
-
-                            # Add spacing between emails
-                            st.markdown("<div style='height: 0.5rem;'></div>", unsafe_allow_html=True)
 
                         st.markdown("</div>", unsafe_allow_html=True)
 
