@@ -2517,7 +2517,7 @@ if page == "Bookings":
                             """, unsafe_allow_html=True)
 
                             # Show email body in expander
-                            with st.expander(f"📧 Email details", expanded=False, key=f"email_exp_{booking['booking_id']}_{email_idx}"):
+                            with st.expander(f"📧 Email details - {received_at}", expanded=False):
                                 body_text = email.get('body_text', 'No body text available')
                                 st.text_area("Email Body", value=body_text, height=150, disabled=True, key=f"email_body_{booking['booking_id']}_{email_idx}")
 
