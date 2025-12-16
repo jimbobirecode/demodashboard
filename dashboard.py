@@ -2470,7 +2470,7 @@ if page == "Bookings":
                                 <div style='color: #10b981; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem;'>{len(emails)} email(s) found</div>
                         """, unsafe_allow_html=True)
 
-                        for email in emails:
+                        for email_idx, email in enumerate(emails):
                             # Determine status color and text
                             if email.get('processed'):
                                 status_color = '#10b981'
@@ -2517,9 +2517,9 @@ if page == "Bookings":
                             """, unsafe_allow_html=True)
 
                             # Show email body in expander
-                            with st.expander(f"📧 Email details", expanded=False, key=f"email_{email.get('id', '')}_{booking['booking_id']}"):
+                            with st.expander(f"📧 Email details", expanded=False, key=f"email_exp_{booking['booking_id']}_{email_idx}"):
                                 body_text = email.get('body_text', 'No body text available')
-                                st.text_area("Email Body", value=body_text, height=150, disabled=True, key=f"email_body_{email.get('id', '')}_{booking['booking_id']}")
+                                st.text_area("Email Body", value=body_text, height=150, disabled=True, key=f"email_body_{booking['booking_id']}_{email_idx}")
 
                                 if email.get('error_message'):
                                     st.error(f"Error: {email.get('error_message')}")
