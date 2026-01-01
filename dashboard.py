@@ -10,6 +10,7 @@ import html
 import re
 import json
 import requests
+import stripe
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
@@ -21,6 +22,159 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 def get_db_connection():
     """Get database connection"""
     return psycopg.connect(DATABASE_URL)
+
+# ========================================
+# STRIPE CONFIGURATION
+# ========================================
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
+DEFAULT_DEPOSIT_PERCENTAGE = int(os.getenv("DEFAULT_DEPOSIT_PERCENTAGE", "20"))
+TOUR_OPERATOR_DEPOSIT_PERCENTAGE = 50
+
+if STRIPE_SECRET_KEY:
+    stripe.api_key = STRIPE_SECRET_KEY
+
+def create_stripe_payment_link(booking_id: str, amount: float, payment_type: str, deposit_percentage: int, guest_email: str, guest_name: str = None):
+    """
+    Create a Stripe payment link for a booking
+
+    Args:
+        booking_id: The booking ID
+        amount: The amount to charge
+        payment_type: 'deposit' or 'full'
+        deposit_percentage: The deposit percentage (e.g., 20, 50)
+        guest_email: Customer email
+        guest_name: Customer name (optional)
+
+    Returns:
+        dict with payment_link_url, payment_id, and stripe_payment_link_id
+    """
+    if not STRIPE_SECRET_KEY:
+        raise ValueError("STRIPE_SECRET_KEY is not set. Please configure Stripe API key in environment variables.")
+
+    try:
+        # Create a product for this booking
+        product_name = f"Golf Booking {payment_type.capitalize()}"
+        if payment_type == "deposit":
+            product_name += f" ({deposit_percentage}%)"
+        product_name += f" - {booking_id}"
+
+        # Create Stripe payment link
+        payment_link = stripe.PaymentLink.create(
+            line_items=[{
+                'price_data': {
+                    'currency': 'eur',
+                    'product_data': {
+                        'name': product_name,
+                        'description': f'Booking ID: {booking_id}'
+                    },
+                    'unit_amount': int(amount * 100),  # Convert to cents
+                },
+                'quantity': 1,
+            }],
+            after_completion={
+                'type': 'redirect',
+                'redirect': {
+                    'url': 'https://www.teemail.com/payment-success'
+                }
+            },
+            metadata={
+                'booking_id': booking_id,
+                'payment_type': payment_type,
+                'deposit_percentage': str(deposit_percentage)
+            },
+            customer_creation='always',
+            billing_address_collection='auto',
+            phone_number_collection={'enabled': True}
+        )
+
+        # Generate unique payment ID
+        payment_id = f"PAY-{datetime.now().strftime('%Y%m%d%H%M%S')}-{booking_id}"
+
+        return {
+            'payment_link_url': payment_link.url,
+            'payment_id': payment_id,
+            'stripe_payment_link_id': payment_link.id
+        }
+    except Exception as e:
+        raise Exception(f"Failed to create Stripe payment link: {str(e)}")
+
+def save_payment_record(booking_id: str, payment_id: str, amount: float, payment_type: str,
+                       deposit_percentage: int, payment_link_url: str, stripe_payment_link_id: str,
+                       created_by: str):
+    """Save payment record to database"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO payments (
+                payment_id, booking_id, amount, payment_type, deposit_percentage,
+                payment_link_url, stripe_payment_link_id, payment_status,
+                payment_link_sent_at, created_by, created_at
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW(), %s, NOW())
+        """, (
+            payment_id, booking_id, amount, payment_type, deposit_percentage,
+            payment_link_url, stripe_payment_link_id, 'pending', created_by
+        ))
+
+        # Update booking payment status
+        cursor.execute("""
+            UPDATE bookings
+            SET payment_status = %s
+            WHERE booking_id = %s
+        """, ('pending', booking_id))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"Error saving payment record: {e}")
+        return False
+
+def get_booking_payments(booking_id: str):
+    """Get all payment records for a booking"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(row_factory=dict_row)
+
+        cursor.execute("""
+            SELECT * FROM payments
+            WHERE booking_id = %s
+            ORDER BY created_at DESC
+        """, (booking_id,))
+
+        payments = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return payments
+    except Exception as e:
+        print(f"Error fetching payments: {e}")
+        return []
+
+def update_tour_operator_status(booking_id: str, is_tour_operator: bool):
+    """Update tour operator status for a booking"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Set deposit percentage based on tour operator status
+        deposit_percentage = TOUR_OPERATOR_DEPOSIT_PERCENTAGE if is_tour_operator else DEFAULT_DEPOSIT_PERCENTAGE
+
+        cursor.execute("""
+            UPDATE bookings
+            SET is_tour_operator = %s, deposit_percentage = %s
+            WHERE booking_id = %s
+        """, (is_tour_operator, deposit_percentage, booking_id))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"Error updating tour operator status: {e}")
+        return False
 
 def get_club_display_name(club_id: str) -> str:
     """
@@ -480,6 +634,117 @@ def send_post_play_email(booking):
         if response.status_code in [200, 202]:
             mark_email_sent(booking['booking_id'], 'post_play')
             return True, f"Post-play email sent to {guest_email}"
+        else:
+            return False, f"SendGrid error: {response.status_code}"
+
+    except Exception as e:
+        return False, f"Error: {str(e)}"
+
+
+def send_payment_request_email(booking, payment_link_url: str, amount: float, payment_type: str):
+    """Send payment request email with Stripe payment link"""
+    try:
+        if not EmailConfig.SENDGRID_API_KEY or not EmailConfig.FROM_EMAIL:
+            return False, "SendGrid not configured"
+
+        if not booking.get('booking_id') or not booking.get('guest_email'):
+            return False, "Missing required booking fields"
+
+        # Clean email address
+        guest_email = clean_email_address(booking['guest_email'])
+        if not guest_email:
+            return False, "Invalid email address"
+
+        # Extract guest name
+        guest_name = booking.get('guest_name', 'Guest')
+
+        # Format tee date
+        tee_date = booking.get('date')
+        if tee_date and not pd.isna(tee_date):
+            formatted_date = tee_date.strftime('%B %d, %Y')
+        else:
+            formatted_date = 'TBD'
+
+        # Extract tee time
+        tee_time_value = extract_tee_time_from_selected_tee_times(booking.get('selected_tee_times'))
+        if not tee_time_value or tee_time_value == 'Not specified':
+            tee_time_value = booking.get('tee_time', 'TBD')
+
+        # Prepare email content
+        payment_type_text = "Deposit" if payment_type == "deposit" else "Full Payment"
+
+        # Build HTML email content
+        email_html = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; text-align: center;">
+                    <h1 style="color: white; margin: 0; font-size: 28px;">Payment Request</h1>
+                    <p style="color: white; margin: 10px 0 0 0; font-size: 16px;">TeeMail Demo</p>
+                </div>
+
+                <div style="padding: 30px;">
+                    <p style="font-size: 16px; color: #333;">Dear {guest_name},</p>
+
+                    <p style="font-size: 16px; color: #333; line-height: 1.6;">
+                        Thank you for your booking! We're excited to welcome you to our golf course.
+                    </p>
+
+                    <p style="font-size: 16px; color: #333; line-height: 1.6;">
+                        To secure your reservation, please complete your <strong>{payment_type_text}</strong> payment using the secure link below:
+                    </p>
+
+                    <div style="background-color: #f8f9fa; border-left: 4px solid #10b981; padding: 20px; margin: 20px 0;">
+                        <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;"><strong>Booking Details:</strong></p>
+                        <p style="margin: 5px 0; color: #333;"><strong>Booking ID:</strong> {booking['booking_id']}</p>
+                        <p style="margin: 5px 0; color: #333;"><strong>Tee Date:</strong> {formatted_date}</p>
+                        <p style="margin: 5px 0; color: #333;"><strong>Tee Time:</strong> {tee_time_value}</p>
+                        <p style="margin: 5px 0; color: #333;"><strong>Players:</strong> {booking.get('players', 0)}</p>
+                        <p style="margin: 5px 0; color: #333;"><strong>Amount Due:</strong> €{amount:.2f}</p>
+                    </div>
+
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="{payment_link_url}" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: bold; display: inline-block;">
+                            Pay Now - €{amount:.2f}
+                        </a>
+                    </div>
+
+                    <p style="font-size: 14px; color: #666; line-height: 1.6;">
+                        This payment link is secure and powered by Stripe. You can pay with any major credit or debit card.
+                    </p>
+
+                    <p style="font-size: 14px; color: #666; line-height: 1.6;">
+                        If you have any questions, please don't hesitate to contact us.
+                    </p>
+
+                    <p style="font-size: 16px; color: #333; margin-top: 30px;">
+                        We look forward to seeing you!<br>
+                        <strong>The TeeMail Demo Team</strong>
+                    </p>
+                </div>
+
+                <div style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e9ecef;">
+                    <p style="margin: 0; color: #666; font-size: 12px;">
+                        © {datetime.now().year} TeeMail Demo. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        message = Mail(
+            from_email=(EmailConfig.FROM_EMAIL, EmailConfig.FROM_NAME),
+            to_emails=guest_email,
+            subject=f"Payment Request - Booking {booking['booking_id']}",
+            html_content=email_html
+        )
+
+        sg = SendGridAPIClient(EmailConfig.SENDGRID_API_KEY)
+        response = sg.send(message)
+
+        if response.status_code in [200, 202]:
+            return True, f"Payment request email sent to {guest_email}"
         else:
             return False, f"SendGrid error: {response.status_code}"
 
@@ -1258,7 +1523,8 @@ def load_bookings_from_db(club_filter):
                 status, note, club, timestamp, customer_confirmed_at,
                 updated_at, updated_by, created_at,
                 hotel_required, hotel_checkin, hotel_checkout,
-                golf_courses, selected_tee_times
+                golf_courses, selected_tee_times,
+                is_tour_operator, payment_status, deposit_percentage, total_paid
             FROM bookings
             WHERE club = %s
             ORDER BY timestamp DESC
@@ -2550,9 +2816,167 @@ if page == "Bookings":
 
                 with detail_col2:
                     st.markdown("### Quick Actions")
-    
+
+                    # Tour Operator Toggle
+                    is_tour_operator = booking.get('is_tour_operator', False)
+                    deposit_percentage = booking.get('deposit_percentage', DEFAULT_DEPOSIT_PERCENTAGE)
+
+                    st.markdown("""
+                        <div style='background: #1e3a8a; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; border: 2px solid #fbbf24;'>
+                            <div style='color: #fbbf24; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;'>Customer Type</div>
+                        </div>
+                    """, unsafe_allow_html=True)
+
+                    tour_operator_toggle = st.checkbox(
+                        f"Tour Operator (50% deposit)",
+                        value=is_tour_operator,
+                        key=f"tour_op_{booking['booking_id']}",
+                        help="Tour Operators require 50% deposit instead of standard 20%"
+                    )
+
+                    if tour_operator_toggle != is_tour_operator:
+                        if update_tour_operator_status(booking['booking_id'], tour_operator_toggle):
+                            st.success(f"Updated to {'Tour Operator' if tour_operator_toggle else 'Regular Customer'}")
+                            st.cache_data.clear()
+                            st.rerun()
+
+                    # Payment Status Display
+                    payment_status = booking.get('payment_status', 'not_requested')
+                    total_paid = booking.get('total_paid', 0.0)
+
+                    payment_status_colors = {
+                        'not_requested': '#64748b',
+                        'pending': '#fbbf24',
+                        'deposit_paid': '#3b82f6',
+                        'fully_paid': '#10b981',
+                        'failed': '#ef4444'
+                    }
+
+                    payment_status_text = {
+                        'not_requested': 'Not Requested',
+                        'pending': 'Payment Pending',
+                        'deposit_paid': 'Deposit Paid',
+                        'fully_paid': 'Fully Paid',
+                        'failed': 'Payment Failed'
+                    }
+
+                    status_color = payment_status_colors.get(payment_status, '#64748b')
+                    status_text = payment_status_text.get(payment_status, 'Unknown')
+
+                    st.markdown(f"""
+                        <div style='background: #1e3a8a; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; border: 2px solid {status_color};'>
+                            <div style='color: #f9fafb; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;'>Payment Status</div>
+                            <div style='color: {status_color}; font-size: 1rem; font-weight: 700; margin-top: 0.5rem;'>{status_text}</div>
+                            <div style='color: #ffffff; font-size: 0.875rem; margin-top: 0.5rem;'>Paid: €{total_paid:.2f} / €{booking['total']:.2f}</div>
+                            <div style='color: #94a3b8; font-size: 0.75rem; margin-top: 0.25rem;'>Deposit: {deposit_percentage}%</div>
+                        </div>
+                    """, unsafe_allow_html=True)
+
+                    # Request Payment Section
+                    if STRIPE_SECRET_KEY:
+                        st.markdown("""
+                            <div style='background: #10b981; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;'>
+                                <div style='color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;'>💳 Payment Request</div>
+                            </div>
+                        """, unsafe_allow_html=True)
+
+                        # Payment type selection
+                        payment_type = st.radio(
+                            "Payment Type",
+                            ["deposit", "full"],
+                            format_func=lambda x: f"Deposit ({deposit_percentage}%)" if x == "deposit" else "Full Payment",
+                            key=f"payment_type_{booking['booking_id']}",
+                            horizontal=True
+                        )
+
+                        # Calculate amount
+                        if payment_type == "deposit":
+                            payment_amount = booking['total'] * (deposit_percentage / 100.0)
+                        else:
+                            payment_amount = booking['total']
+
+                        st.markdown(f"""
+                            <div style='text-align: center; padding: 0.5rem; background: #1e3a8a; border-radius: 6px; margin-bottom: 0.75rem;'>
+                                <div style='color: #94a3b8; font-size: 0.75rem;'>Amount to Request</div>
+                                <div style='color: #10b981; font-size: 1.5rem; font-weight: 700;'>€{payment_amount:.2f}</div>
+                            </div>
+                        """, unsafe_allow_html=True)
+
+                        if st.button("📧 Send Payment Request", key=f"send_payment_{booking['booking_id']}", use_container_width=True, type="primary"):
+                            try:
+                                # Create Stripe payment link
+                                with st.spinner("Creating payment link..."):
+                                    payment_data = create_stripe_payment_link(
+                                        booking_id=booking['booking_id'],
+                                        amount=payment_amount,
+                                        payment_type=payment_type,
+                                        deposit_percentage=deposit_percentage,
+                                        guest_email=booking['guest_email'],
+                                        guest_name=booking.get('guest_name')
+                                    )
+
+                                # Save payment record
+                                if save_payment_record(
+                                    booking_id=booking['booking_id'],
+                                    payment_id=payment_data['payment_id'],
+                                    amount=payment_amount,
+                                    payment_type=payment_type,
+                                    deposit_percentage=deposit_percentage,
+                                    payment_link_url=payment_data['payment_link_url'],
+                                    stripe_payment_link_id=payment_data['stripe_payment_link_id'],
+                                    created_by=st.session_state.username
+                                ):
+                                    # Send email
+                                    success, message = send_payment_request_email(
+                                        booking=booking,
+                                        payment_link_url=payment_data['payment_link_url'],
+                                        amount=payment_amount,
+                                        payment_type=payment_type
+                                    )
+
+                                    if success:
+                                        st.success(f"✅ Payment request sent! {message}")
+                                        st.info(f"Payment link: {payment_data['payment_link_url']}")
+                                        st.cache_data.clear()
+                                        st.rerun()
+                                    else:
+                                        st.warning(f"Payment link created but email failed: {message}")
+                                        st.info(f"You can manually send this link: {payment_data['payment_link_url']}")
+                                else:
+                                    st.error("Failed to save payment record")
+                            except Exception as e:
+                                st.error(f"Error: {str(e)}")
+
+                        # Display payment history
+                        payments = get_booking_payments(booking['booking_id'])
+                        if payments:
+                            st.markdown("""
+                                <div style='margin-top: 1rem; padding: 0.75rem; background: #1e3a8a; border-radius: 8px; border: 2px solid #3b82f6;'>
+                                    <div style='color: #3b82f6; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;'>Payment History</div>
+                            """, unsafe_allow_html=True)
+
+                            for payment in payments[:3]:  # Show last 3 payments
+                                payment_date = payment.get('created_at')
+                                if payment_date and not pd.isna(payment_date):
+                                    payment_date_str = payment_date.strftime('%b %d, %Y')
+                                else:
+                                    payment_date_str = 'N/A'
+
+                                st.markdown(f"""
+                                    <div style='background: #2d3e50; padding: 0.5rem; border-radius: 4px; margin-bottom: 0.5rem;'>
+                                        <div style='color: #ffffff; font-size: 0.75rem;'>{payment['payment_type'].capitalize()}: €{payment['amount']:.2f}</div>
+                                        <div style='color: #94a3b8; font-size: 0.65rem;'>{payment_date_str} • {payment['payment_status']}</div>
+                                    </div>
+                                """, unsafe_allow_html=True)
+
+                            st.markdown("</div>", unsafe_allow_html=True)
+                    else:
+                        st.warning("Stripe not configured. Set STRIPE_SECRET_KEY to enable payments.")
+
+                    st.markdown("<div style='margin-top: 1.5rem; border-top: 2px solid #3b82f6; padding-top: 1rem;'></div>", unsafe_allow_html=True)
+
                     current_status = booking['status']
-    
+
                     # Status change dropdown - allows navigation to any status
                     st.markdown("<div style='margin-bottom: 1rem;'>", unsafe_allow_html=True)
                     all_statuses = ['Inquiry', 'Requested', 'Confirmed', 'Booked', 'Rejected', 'Cancelled']
