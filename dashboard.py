@@ -2891,9 +2891,9 @@ if page == "Bookings":
 
                         # Calculate amount
                         if payment_type == "deposit":
-                            payment_amount = booking['total'] * (deposit_percentage / 100.0)
+                            payment_amount = float(booking['total']) * (deposit_percentage / 100.0)
                         else:
-                            payment_amount = booking['total']
+                            payment_amount = float(booking['total'])
 
                         st.markdown(f"""
                             <div style='text-align: center; padding: 0.5rem; background: #1e3a8a; border-radius: 6px; margin-bottom: 0.75rem;'>
