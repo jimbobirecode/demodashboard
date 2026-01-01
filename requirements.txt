@@ -9,3 +9,4 @@ pandas==2.2.3
 plotly==5.18.0
 openpyxl==3.1.2
 bcrypt==4.1.2
+stripe==7.11.0
